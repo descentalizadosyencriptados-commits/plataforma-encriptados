@@ -1,65 +1,147 @@
-import Image from "next/image";
+"use client";
+
+import { FormEvent, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function Home() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState<string | null>(null);
+
+  const checkEnv = () => {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      setStatus("Error: no se encontraron las variables de entorno de Supabase.");
+      console.error("NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY no están definidas.");
+      return false;
+    }
+    return true;
+  };
+
+  const handleEmailPasswordLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!checkEnv()) return;
+    if (!email || !password) {
+      setStatus("Por favor ingresa correo electrónico y contraseña.");
+      return;
+    }
+
+    setStatus("Iniciando sesión con correo y contraseña...");
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setStatus("Error al iniciar sesión. Revisa tu correo o contraseña.");
+        console.error("Supabase signInWithPassword error:", error);
+        return;
+      }
+
+      setStatus("Inicio de sesión exitoso. Redirigiendo...");
+      console.log("Supabase signInWithPassword response:", data);
+      window.location.href = "/dashboard";
+    } catch (error) {
+      setStatus("Error inesperado al iniciar sesión con Supabase.");
+      console.error("Supabase login exception:", error);
+    }
+  };
+
+  const handleMagicLink = async () => {
+    if (!checkEnv()) return;
+    if (!email) {
+      setStatus("Ingresa tu correo electrónico para recibir el enlace mágico.");
+      return;
+    }
+
+    setStatus("Enviando enlace mágico al correo...");
+
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+
+      if (error) {
+        setStatus("Error al enviar el enlace mágico. Revisa la consola.");
+        console.error("Supabase signInWithOtp error:", error);
+        return;
+      }
+
+      setStatus("Revisa tu correo: te enviamos el enlace mágico.");
+      console.log("Supabase signInWithOtp response:", data);
+    } catch (error) {
+      setStatus("Error inesperado al enviar el enlace mágico.");
+      console.error("Supabase magic link exception:", error);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <div className="mx-auto flex min-h-full max-w-4xl flex-col items-center justify-center rounded-3xl border border-white/10 bg-slate-900/80 p-12 shadow-2xl shadow-slate-950/50 backdrop-blur-xl">
+        <span className="mb-6 inline-flex rounded-full bg-amber-500/10 px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300 ring-1 ring-amber-500/20">
+          Bienvenido a la Academia
+        </span>
+        <h1 className="text-center text-5xl font-semibold tracking-tight text-amber-300 sm:text-6xl">
+          Encriptados Academy
+        </h1>
+        <p className="mt-4 max-w-2xl text-center text-lg text-slate-300 sm:text-xl">
+          Panel de Control de Estudiantes
+        </p>
+
+        <form className="mt-10 w-full max-w-xl space-y-4" onSubmit={handleEmailPasswordLogin}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="flex flex-col text-sm text-slate-300">
+              Correo electrónico
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                className="mt-2 rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                placeholder="tu@correo.com"
+              />
+            </label>
+            <label className="flex flex-col text-sm text-slate-300">
+              Contraseña
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="mt-2 rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                placeholder="********"
+              />
+            </label>
+          </div>
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <button
+              type="submit"
+              className="inline-flex w-full items-center justify-center rounded-full bg-amber-500 px-8 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition duration-300 ease-out hover:-translate-y-0.5 hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-950"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Iniciar Sesión
+            </button>
+            <button
+              type="button"
+              onClick={handleMagicLink}
+              className="inline-flex w-full items-center justify-center rounded-full border border-amber-500/40 bg-slate-950/70 px-8 py-4 text-base font-semibold text-amber-300 transition duration-300 ease-out hover:border-amber-300 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-950"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+              Enviar Magic Link
+            </button>
+          </div>
+        </form>
+
+        {status ? (
+          <p className="mt-6 text-center text-sm text-slate-300">{status}</p>
+        ) : null}
+      </div>
     </div>
   );
 }
