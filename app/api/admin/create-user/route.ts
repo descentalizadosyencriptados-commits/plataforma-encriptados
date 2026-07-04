@@ -45,7 +45,6 @@ export async function POST(req: Request) {
         [
           {
             id: userId,
-            email,
             membership_tier,
           },
         ],

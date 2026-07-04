@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, FormEvent } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
@@ -8,6 +8,74 @@ import { useRouter } from "next/navigation";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+function ChangePasswordForm({ supabase }: { supabase: any }) {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [updating, setUpdating] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setStatus(null);
+    if (!newPassword || !confirmPassword) {
+      setStatus("Completa ambos campos.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setStatus("Las contraseñas no coinciden.");
+      return;
+    }
+
+    setUpdating(true);
+    setStatus("Actualizando contraseña...");
+
+    try {
+      const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        setStatus(error.message ?? "Error al actualizar la contraseña.");
+      } else {
+        setStatus("Contraseña actualizada correctamente.");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (err: any) {
+      setStatus(err?.message ?? "Error inesperado.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+      <input
+        type="password"
+        placeholder="Nueva contraseña"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+        className="w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-zinc-100 outline-none"
+      />
+
+      <input
+        type="password"
+        placeholder="Confirmar contraseña"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        className="w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-zinc-100 outline-none"
+      />
+
+      <button
+        type="submit"
+        disabled={updating}
+        className="w-full rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-amber-400 disabled:opacity-60"
+      >
+        {updating ? "Actualizando..." : "Actualizar contraseña"}
+      </button>
+
+      {status ? <p className="text-sm text-amber-300">{status}</p> : null}
+    </form>
+  );
+}
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -135,6 +203,14 @@ export default function DashboardPage() {
           <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
             <h3 className="font-semibold text-zinc-300">Tu Membresía Actual</h3>
             <p className="text-xl font-bold mt-2 text-amber-500">{userTier || "Sin Membresía Activa"}</p>
+          </div>
+
+          {/* Formulario: Cambiar contraseña */}
+          <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
+            <h3 className="font-semibold text-zinc-300">Actualizar Contraseña</h3>
+            <p className="text-sm text-zinc-400 mt-2">Cambia tu contraseña de forma segura desde tu cuenta.</p>
+
+            <ChangePasswordForm supabase={supabase} />
           </div>
 
           {/* Zona VIP exclusiva para el High Ticket o ADMIN */}
