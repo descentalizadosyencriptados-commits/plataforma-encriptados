@@ -116,36 +116,6 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
         <p className="text-zinc-400 animate-pulse">Cargando tu aula de clase...</p>
       </div>
-
-      {/* Sección: Preguntas Frecuentes / Soporte */}
-      <div className="mt-10 max-w-6xl mx-auto">
-        <section className="rounded-2xl bg-zinc-900 border border-zinc-800 p-8">
-          <h3 className="text-xl font-semibold text-zinc-100">Preguntas Frecuentes & Soporte</h3>
-          <p className="text-sm text-zinc-400 mt-2">¿Tienes dudas? Aquí encontrarás respuestas rápidas o contacta directamente al profesor.</p>
-
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-800">
-              <p className="font-medium text-zinc-100">¿Cómo cambio mi contraseña?</p>
-              <p className="text-sm text-zinc-400 mt-2">Usa el formulario en la barra lateral para actualizar tu contraseña de forma segura.</p>
-            </div>
-
-            <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-800">
-              <p className="font-medium text-zinc-100">No veo un módulo que compré — ¿por qué?</p>
-              <p className="text-sm text-zinc-400 mt-2">Verifica tu membresía o contacta al profesor si el acceso no se ha sincronizado.</p>
-            </div>
-
-            <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-800">
-              <p className="font-medium text-zinc-100">¿Dónde están las calculadoras y plantillas?</p>
-              <p className="text-sm text-zinc-400 mt-2">Cada módulo incluye enlaces rápidos a herramientas; también puedes descargarlas desde la Zona VIP.</p>
-            </div>
-
-            <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-800">
-              <p className="font-medium text-zinc-100">Contactar al profesor</p>
-              <p className="text-sm text-zinc-400 mt-2">Envía un mensaje a soporte@encriptados.academy o usa el botón de Agendar Sesión Privada en Zona VIP.</p>
-            </div>
-          </div>
-        </section>
-      </div>
     );
   }
 
