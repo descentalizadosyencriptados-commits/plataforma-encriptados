@@ -171,6 +171,81 @@ export default function Home() {
           <p className="mt-6 text-center text-sm text-slate-300">{status}</p>
         ) : null}
       </div>
+      {/* Features Grid - ¿Por qué Encriptados Academy? */}
+      <div className="mt-12 mx-auto max-w-6xl px-4">
+        <div className="text-center">
+          <h3 className="text-2xl font-semibold text-white">¿Por qué Encriptados Academy?</h3>
+          <p className="mt-2 text-sm text-zinc-400">Educación profesional en DeFi, rendimiento avanzado y seguridad patrimonial.</p>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Card 1 */}
+          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-lg bg-pink-500/20 flex items-center justify-center text-pink-300">UNI</div>
+              <div>
+                <h4 className="font-semibold text-white">Estratégias Uniswap V3/V4</h4>
+                <p className="mt-2 text-sm text-zinc-400">Aprende a diseñar rangos de precio óptimos y maximizar tus fees mediante el rebalanceo estratégico de pools dinámicas.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2 */}
+          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-lg bg-emerald-400/20 flex items-center justify-center text-emerald-400">AAV</div>
+              <div>
+                <h4 className="font-semibold text-white">Lending & Borrowing</h4>
+                <p className="mt-2 text-sm text-zinc-400">Domina protocolos como Aave para usar tu colateral estratégicamente, abrir líneas de crédito descentralizadas y optimizar tu capital.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-lg bg-amber-400/20 flex items-center justify-center text-amber-300">TAX</div>
+              <div>
+                <h4 className="font-semibold text-white">Tranquilidad Legal y Fiscal</h4>
+                <p className="mt-2 text-sm text-zinc-400">Opera con la seguridad de saber cómo declarar de forma correcta tus rendimientos DeFi, logrando total paz jurídica en 2026.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4 */}
+          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-lg bg-blue-400/20 flex items-center justify-center text-blue-300">🔒</div>
+              <div>
+                <h4 className="font-semibold text-white">Custodia Profesional</h4>
+                <p className="mt-2 text-sm text-zinc-400">Implementa protocolos técnicos avanzados y aprende el manejo seguro de hardware wallets para que nadie pueda tocar tus fondos.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 5 */}
+          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-lg bg-green-400/20 flex items-center justify-center text-green-300">📈</div>
+              <div>
+                <h4 className="font-semibold text-white">Calculadoras Dinámicas</h4>
+                <p className="mt-2 text-sm text-zinc-400">Acceso exclusivo a simuladores para proyectar tus rangos de liquidez, calcular impermanent loss y gestionar riesgos.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 6 */}
+          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-lg bg-purple-400/20 flex items-center justify-center text-purple-300">👥</div>
+              <div>
+                <h4 className="font-semibold text-white">Comunidad Encriptados Pro</h4>
+                <p className="mt-2 text-sm text-zinc-400">Resuelve tus dudas directamente con soporte especializado debajo de cada módulo y avanza de la mano con profesionales del ecosistema.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
