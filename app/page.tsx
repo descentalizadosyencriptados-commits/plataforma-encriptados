@@ -87,63 +87,85 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-950 px-6 py-10 text-white">
-      <div className="mx-auto flex min-h-full max-w-4xl flex-col items-center justify-center rounded-3xl border border-white/10 bg-slate-900/80 p-12 shadow-2xl shadow-slate-950/50 backdrop-blur-xl">
-        {/* Logo placeholder - reemplazar por <Image> con logo real */}
-        <div className="mb-6 flex items-center justify-center">
-          <div className="flex h-20 w-40 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950/60">
-            <span className="text-sm font-medium text-zinc-300">Logo Encriptados Academy</span>
+      <div className="mx-auto min-h-full max-w-6xl rounded-3xl border border-white/6 bg-gradient-to-br from-[#06070a] via-zinc-900/60 to-zinc-900/40 p-12 shadow-2xl shadow-black/60 backdrop-blur-xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+          {/* Columna Izquierda - Propuesta de Valor */}
+          <div className="px-4">
+            <div className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-amber-500/10 to-indigo-600/8 px-3 py-1 text-sm font-medium text-amber-300 ring-1 ring-amber-500/10">
+              <span>🔒 En producción • Conectando con Web3</span>
+            </div>
+
+            <h2 className="mt-6 text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white">
+              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white to-amber-300">Finanzas sin intermediarios.</span>
+              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-indigo-400">Tu capital bajo tu control.</span>
+            </h2>
+
+            <p className="mt-6 text-lg text-zinc-300 max-w-prose">
+              Aprende a dominar el ecosistema DeFi. Domina estrategias profesionales de Yield Farming, provee liquidez concentrada en Uniswap V3/V4, gestiona Lending en Aave y construye un portafolio cripto sólido con total tranquilidad legal y fiscal.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              {[
+                ["Bitcoin", "#F7931A"],
+                ["Ethereum", "#627EEA"],
+                ["Uniswap", "#FF007A"],
+                ["Aave", "#2EB67D"],
+                ["Celo", "#35D07F"],
+                ["Arbitrum", "#28a0f0"],
+                ["Polygon", "#8247e5"],
+                ["Base", "#1b1f3a"],
+              ].map(([name, color]) => (
+                <span key={String(name)} style={{ borderColor: color as string }} className="px-3 py-1 rounded-full text-sm font-medium text-zinc-100 border" >{String(name)}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Columna Derecha - Card de Acceso */}
+          <div className="flex items-center justify-center px-4">
+            <div className="w-full max-w-md rounded-2xl bg-zinc-900/70 border border-zinc-800 p-8 shadow-xl">
+              <div className="flex items-center justify-center mb-6">
+                <div className="h-20 w-40 flex items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950/40">
+                  <span className="text-sm font-medium text-zinc-300">Logo Encriptados Academy</span>
+                </div>
+              </div>
+
+              <form className="space-y-4" onSubmit={handleEmailPasswordLogin}>
+                <label className="flex flex-col text-sm text-slate-300">
+                  Correo electrónico
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className="mt-2 rounded-2xl border border-slate-700 bg-zinc-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                    placeholder="tu@correo.com"
+                  />
+                </label>
+
+                <label className="flex flex-col text-sm text-slate-300">
+                  Contraseña
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="mt-2 rounded-2xl border border-slate-700 bg-zinc-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                    placeholder="********"
+                  />
+                </label>
+
+                <button
+                  type="submit"
+                  className="w-full rounded-full bg-amber-500 px-6 py-3 text-base font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition duration-200 hover:bg-amber-400"
+                >
+                  Iniciar Sesión
+                </button>
+
+                <div className="text-center mt-2">
+                  <button type="button" onClick={handleMagicLink} className="text-sm text-amber-300 hover:underline">Enviar Magic Link</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
-
-        <h1 className="text-center text-5xl font-semibold tracking-tight text-amber-300 sm:text-6xl">
-          Encriptados Academy
-        </h1>
-        <p className="mt-4 max-w-2xl text-center text-lg text-slate-300 sm:text-xl">
-          Panel de Control de Estudiantes
-        </p>
-
-        <form className="mt-10 w-full max-w-xl space-y-4" onSubmit={handleEmailPasswordLogin}>
-          <div className="space-y-4">
-            <label className="flex flex-col text-sm text-slate-300">
-              Correo electrónico
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className="mt-2 rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                placeholder="tu@correo.com"
-              />
-            </label>
-
-            <label className="flex flex-col text-sm text-slate-300">
-              Contraseña
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="mt-2 rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                placeholder="********"
-              />
-            </label>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <button
-              type="submit"
-              className="w-full rounded-full bg-amber-500 px-6 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition duration-300 ease-out hover:-translate-y-0.5 hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-            >
-              Iniciar Sesión
-            </button>
-
-            <button
-              type="button"
-              onClick={handleMagicLink}
-              className="w-full text-center text-sm text-amber-300 hover:underline mt-1"
-            >
-              Enviar Magic Link
-            </button>
-          </div>
-        </form>
 
         {status ? (
           <p className="mt-6 text-center text-sm text-slate-300">{status}</p>
