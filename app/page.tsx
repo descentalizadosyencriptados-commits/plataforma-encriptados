@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
@@ -87,9 +88,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-slate-950 px-6 py-10 text-white">
       <div className="mx-auto flex min-h-full max-w-4xl flex-col items-center justify-center rounded-3xl border border-white/10 bg-slate-900/80 p-12 shadow-2xl shadow-slate-950/50 backdrop-blur-xl">
-        <span className="mb-6 inline-flex rounded-full bg-amber-500/10 px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-amber-300 ring-1 ring-amber-500/20">
-          Bienvenido a la Academia
-        </span>
+        {/* Logo placeholder - reemplazar por <Image> con logo real */}
+        <div className="mb-6 flex items-center justify-center">
+          <div className="flex h-20 w-40 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950/60">
+            <span className="text-sm font-medium text-zinc-300">Logo Encriptados Academy</span>
+          </div>
+        </div>
+
         <h1 className="text-center text-5xl font-semibold tracking-tight text-amber-300 sm:text-6xl">
           Encriptados Academy
         </h1>
@@ -98,7 +103,7 @@ export default function Home() {
         </p>
 
         <form className="mt-10 w-full max-w-xl space-y-4" onSubmit={handleEmailPasswordLogin}>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-4">
             <label className="flex flex-col text-sm text-slate-300">
               Correo electrónico
               <input
@@ -109,6 +114,7 @@ export default function Home() {
                 placeholder="tu@correo.com"
               />
             </label>
+
             <label className="flex flex-col text-sm text-slate-300">
               Contraseña
               <input
@@ -121,17 +127,18 @@ export default function Home() {
             </label>
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-3">
             <button
               type="submit"
-              className="inline-flex w-full items-center justify-center rounded-full bg-amber-500 px-8 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition duration-300 ease-out hover:-translate-y-0.5 hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-950"
+              className="w-full rounded-full bg-amber-500 px-6 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition duration-300 ease-out hover:-translate-y-0.5 hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
             >
               Iniciar Sesión
             </button>
+
             <button
               type="button"
               onClick={handleMagicLink}
-              className="inline-flex w-full items-center justify-center rounded-full border border-amber-500/40 bg-slate-950/70 px-8 py-4 text-base font-semibold text-amber-300 transition duration-300 ease-out hover:border-amber-300 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-950"
+              className="w-full text-center text-sm text-amber-300 hover:underline mt-1"
             >
               Enviar Magic Link
             </button>
