@@ -116,6 +116,36 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
         <p className="text-zinc-400 animate-pulse">Cargando tu aula de clase...</p>
       </div>
+
+      {/* Sección: Preguntas Frecuentes / Soporte */}
+      <div className="mt-10 max-w-6xl mx-auto">
+        <section className="rounded-2xl bg-zinc-900 border border-zinc-800 p-8">
+          <h3 className="text-xl font-semibold text-zinc-100">Preguntas Frecuentes & Soporte</h3>
+          <p className="text-sm text-zinc-400 mt-2">¿Tienes dudas? Aquí encontrarás respuestas rápidas o contacta directamente al profesor.</p>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-800">
+              <p className="font-medium text-zinc-100">¿Cómo cambio mi contraseña?</p>
+              <p className="text-sm text-zinc-400 mt-2">Usa el formulario en la barra lateral para actualizar tu contraseña de forma segura.</p>
+            </div>
+
+            <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-800">
+              <p className="font-medium text-zinc-100">No veo un módulo que compré — ¿por qué?</p>
+              <p className="text-sm text-zinc-400 mt-2">Verifica tu membresía o contacta al profesor si el acceso no se ha sincronizado.</p>
+            </div>
+
+            <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-800">
+              <p className="font-medium text-zinc-100">¿Dónde están las calculadoras y plantillas?</p>
+              <p className="text-sm text-zinc-400 mt-2">Cada módulo incluye enlaces rápidos a herramientas; también puedes descargarlas desde la Zona VIP.</p>
+            </div>
+
+            <div className="rounded-xl bg-zinc-950/60 p-4 border border-zinc-800">
+              <p className="font-medium text-zinc-100">Contactar al profesor</p>
+              <p className="text-sm text-zinc-400 mt-2">Envía un mensaje a soporte@encriptados.academy o usa el botón de Agendar Sesión Privada en Zona VIP.</p>
+            </div>
+          </div>
+        </section>
+      </div>
     );
   }
 
@@ -149,53 +179,119 @@ export default function DashboardPage() {
       {/* Contenido Principal */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Columna de Cursos Disponibles */}
-        <div className="lg:col-span-2 space-y-6">
-          <h2 className="text-xl font-semibold mb-4">Mis Módulos de Estudio</h2>
+        {/* Columna de Cursos Disponibles - Tarjetas Modernas */}
+        <div className="lg:col-span-2">
+          <h2 className="text-2xl font-semibold mb-6">Mis Módulos de Estudio</h2>
 
-          {/* Módulo 1: Ahorro Inteligente en BTC */}
-          {(userTier === "Curso Ahorro Inteligente BTC" || userTier === "DeFi Avanzado" || userTier === "Asesoría 1a1" || userTier === "ADMIN") ? (
-            <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-amber-500/50 transition">
-              <span className="text-xs font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded">Low Ticket</span>
-              <h3 className="text-lg font-bold mt-2">Curso de Ahorro Inteligente en Bitcoin</h3>
-              <p className="text-sm text-zinc-400 mt-1">Aprende a acumular y custodiar tu Bitcoin de forma segura y estratégica.</p>
-            <button 
-                type="button"
-                onClick={() => router.push('/dashboard/curso/btc')}
-                className="mt-4 w-full bg-amber-500 hover:bg-amber-600 text-zinc-950 text-sm font-semibold py-2 rounded-lg transition"
-              >
-                Ingresar al Módulo
-              </button>
-            </div>
-          ) : (
-            <div className="p-6 bg-zinc-900/40 border border-zinc-800/50 rounded-xl opacity-50">
-              <h3 className="text-lg font-bold text-zinc-500">Curso de Ahorro Inteligente en Bitcoin</h3>
-              <p className="text-sm text-zinc-600 mt-1">No tienes acceso a este módulo.</p>
-            </div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Card: Bitcoin */}
+            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-4 shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="h-14 w-14 rounded-xl bg-amber-600/10 flex items-center justify-center" style={{ border: '1px solid rgba(247,147,26,0.08)' }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" fill="#F7931A" />
+                      <text x="12" y="16" textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">₿</text>
+                    </svg>
+                  </div>
+                </div>
 
-          {/* Módulo 2: DeFi Avanzado */}
-          {(userTier === "DeFi Avanzado" || userTier === "Asesoría 1a1" || userTier === "ADMIN") ? (
-            <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-blue-500/50 transition">
-              <span className="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded">Medium Ticket</span>
-              <h3 className="text-lg font-bold mt-2">DeFi Avanzado y Liquidez Concentrada</h3>
-              <p className="text-sm text-zinc-400 mt-1">Estrategias de yield farming, préstamos y optimización de rangos en Uniswap.</p>
-              <button 
-                type="button"
-                onClick={() => router.push('/dashboard/curso/defi')}
-                className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2 rounded-lg transition"
-              >
-                Ingresar al Módulo
-              </button>
-            </div>
-          ) : (
-            <div className="p-6 bg-zinc-900/40 border border-zinc-800/50 rounded-xl flex justify-between items-center opacity-40">
-              <div>
-                <h3 className="text-lg font-bold text-zinc-500">DeFi Avanzado y Liquidez Concentrada</h3>
-                <p className="text-sm text-zinc-600 mt-1">Disponible en el plan Medium Ticket.</p>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-amber-300">Curso Ahorro Inteligente BTC</h3>
+                  <p className="mt-1 text-sm text-zinc-400">Estrategias de acumulación, custodia y hodling profesional.</p>
+                </div>
               </div>
-            </div>
-          )}
+
+              <div className="mt-4 flex gap-4 items-center">
+                <div className="h-28 w-40 rounded-lg bg-gradient-to-br from-amber-600/10 to-zinc-900/10 border border-zinc-800 flex items-center justify-center text-amber-200">Portada BTC</div>
+                <div className="flex-1 flex gap-3">
+                  <button onClick={() => router.push('/dashboard/curso/btc')} className="flex-1 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 py-2 font-semibold">Iniciar Clase</button>
+                  <button className="rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-200">Ver Calculadora</button>
+                </div>
+              </div>
+            </article>
+
+            {/* Card: Ethereum / DeFi */}
+            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-4 shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="h-14 w-14 rounded-xl bg-indigo-600/10 flex items-center justify-center" style={{ border: '1px solid rgba(98,126,234,0.08)' }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" fill="#627EEA" />
+                      <path d="M8 12l4-4 4 4-4 4-4-4z" fill="#fff" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-indigo-300">DeFi Avanzado (Ethereum)</h3>
+                  <p className="mt-1 text-sm text-zinc-400">Deep-dive en smart contracts, lending y estrategias avanzadas.</p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex gap-4 items-center">
+                <div className="h-28 w-40 rounded-lg bg-gradient-to-br from-indigo-600/10 to-zinc-900/10 border border-zinc-800 flex items-center justify-center text-indigo-200">Portada ETH</div>
+                <div className="flex-1 flex gap-3">
+                  <button onClick={() => router.push('/dashboard/curso/defi')} className="flex-1 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 font-semibold">Iniciar Clase</button>
+                  <button className="rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-200">Ver Calculadora</button>
+                </div>
+              </div>
+            </article>
+
+            {/* Card: Uniswap */}
+            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-4 shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="h-14 w-14 rounded-xl bg-pink-500/10 flex items-center justify-center" style={{ border: '1px solid rgba(255,0,122,0.06)' }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" fill="#FF007A" />
+                      <path d="M7 12h10" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-pink-300">Uniswap · Liquidez Concentrada</h3>
+                  <p className="mt-1 text-sm text-zinc-400">Optimiza rangos de liquidez y fees con estrategias prácticas.</p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex gap-4 items-center">
+                <div className="h-28 w-40 rounded-lg bg-gradient-to-br from-pink-500/10 to-zinc-900/10 border border-zinc-800 flex items-center justify-center text-pink-200">Portada UNI</div>
+                <div className="flex-1 flex gap-3">
+                  <button className="flex-1 rounded-full bg-pink-500 hover:bg-pink-400 text-white py-2 font-semibold">Iniciar Clase</button>
+                  <button className="rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-200">Ver Calculadora</button>
+                </div>
+              </div>
+            </article>
+
+            {/* Card: Aave */}
+            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-4 shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="h-14 w-14 rounded-xl bg-green-600/10 flex items-center justify-center" style={{ border: '1px solid rgba(46,182,125,0.08)' }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" fill="#2EB67D" />
+                      <path d="M8 16l4-8 4 8" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-emerald-300">Aave · Lending & Borrowing</h3>
+                  <p className="mt-1 text-sm text-zinc-400">Prácticas de lending, colateral y optimización de posiciones.</p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex gap-4 items-center">
+                <div className="h-28 w-40 rounded-lg bg-gradient-to-br from-green-600/10 to-zinc-900/10 border border-zinc-800 flex items-center justify-center text-green-200">Portada AAVE</div>
+                <div className="flex-1 flex gap-3">
+                  <button className="flex-1 rounded-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 py-2 font-semibold">Iniciar Clase</button>
+                  <button className="rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-200">Ver Calculadora</button>
+                </div>
+              </div>
+            </article>
+          </div>
         </div>
 
         {/* Columna Lateral - Información de Cuenta y Zona VIP */}
