@@ -1,17 +1,21 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function Home() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<string | null>(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const checkEnv = () => {
     if (!supabaseUrl || !supabaseAnonKey) {
@@ -31,6 +35,7 @@ export default function Home() {
       return;
     }
 
+    setIsSubmitting(true);
     setStatus("Iniciando sesión con correo y contraseña...");
 
     try {
@@ -47,12 +52,32 @@ export default function Home() {
 
       setStatus("Inicio de sesión exitoso. Redirigiendo...");
       console.log("Supabase signInWithPassword response:", data);
-      window.location.href = "/dashboard";
+      router.replace("/dashboard");
     } catch (error) {
       setStatus("Error inesperado al iniciar sesión con Supabase.");
       console.error("Supabase login exception:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    async function verifySession() {
+      if (!supabaseUrl || !supabaseAnonKey) {
+        setIsCheckingSession(false);
+        return;
+      }
+
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        router.push("/dashboard");
+        return;
+      }
+      setIsCheckingSession(false);
+    }
+
+    verifySession();
+  }, [router]);
 
   const handleMagicLink = async () => {
     if (!checkEnv()) return;
@@ -85,26 +110,51 @@ export default function Home() {
     }
   };
 
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-100 px-6">
+        <div className="flex items-center gap-4 rounded-3xl border border-slate-200 bg-white px-6 py-5 shadow-xl">
+          <div className="h-4 w-4 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+          <div>
+            <p className="text-sm font-semibold text-slate-900">Verificando sesión...</p>
+            <p className="text-xs text-slate-500">Un momento mientras protegemos tu acceso.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-950 px-6 py-10 text-white">
-      <div className="mx-auto min-h-full max-w-6xl rounded-3xl border border-white/6 bg-gradient-to-br from-[#06070a] via-zinc-900/60 to-zinc-900/40 p-12 shadow-2xl shadow-black/60 backdrop-blur-xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          {/* Columna Izquierda - Propuesta de Valor */}
-          <div className="px-4">
-            <div className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-amber-500/10 to-indigo-600/8 px-3 py-1 text-sm font-medium text-amber-300 ring-1 ring-amber-500/10">
-              <span>🔒 En producción • Conectando con Web3</span>
+    <div className="min-h-screen bg-slate-100">
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+        <section className="relative flex flex-col justify-between bg-[#0B0F19] px-6 py-10 sm:px-12 sm:py-16 text-white overflow-hidden">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_35%)] blur-3xl opacity-60" />
+          <div className="absolute bottom-0 right-0 h-72 w-72 -translate-x-1/3 translate-y-1/3 rounded-full bg-[radial-gradient(circle,_rgba(234,179,8,0.18),_transparent_55%)] opacity-70 blur-3xl" />
+
+          <div className="space-y-10 relative z-10">
+            <div className="flex items-center justify-start">
+              <Image
+                src="/images/logo-encriptados.png"
+                alt="Logo Encriptados Academy"
+                width={150}
+                height={70}
+                priority
+                className="object-contain"
+              />
             </div>
 
-            <h2 className="mt-6 text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white">
-              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white to-amber-300">Finanzas sin intermediarios.</span>
-              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-indigo-400">Tu capital bajo tu control.</span>
-            </h2>
+            <div className="max-w-2xl">
+              <p className="text-sm uppercase tracking-[0.35em] text-amber-300/80">Encriptados Academy</p>
+              <h1 className="mt-6 text-4xl font-serif font-semibold leading-tight tracking-tight text-white sm:text-5xl">
+                Finanzas sin <span className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">intermediarios.</span>
+                <span className="block text-white">Tu <span className="text-amber-300">capital</span> bajo tu control.</span>
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-8 text-slate-300">
+                Educación DeFi premium con estrategias de liquidez, lending y custodia profesional para construir tu posición con confianza.
+              </p>
+            </div>
 
-            <p className="mt-6 text-lg text-zinc-300 max-w-prose">
-              Aprende a dominar el ecosistema DeFi. Domina estrategias profesionales de Yield Farming, provee liquidez concentrada en Uniswap V3/V4, gestiona Lending en Aave y construye un portafolio cripto sólido con total tranquilidad legal y fiscal.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {[
                 ["Bitcoin", "#F7931A"],
                 ["Ethereum", "#627EEA"],
@@ -112,139 +162,89 @@ export default function Home() {
                 ["Aave", "#2EB67D"],
                 ["Celo", "#35D07F"],
                 ["Arbitrum", "#28a0f0"],
-                ["Polygon", "#8247e5"],
-                ["Base", "#1b1f3a"],
               ].map(([name, color]) => (
-                <span key={String(name)} style={{ borderColor: color as string }} className="px-3 py-1 rounded-full text-sm font-medium text-zinc-100 border" >{String(name)}</span>
+                <span
+                  key={String(name)}
+                  style={{ borderColor: color as string }}
+                  className="inline-flex items-center justify-center rounded-2xl border px-4 py-2 text-sm font-medium text-slate-100 bg-white/5 backdrop-blur-sm"
+                >
+                  {String(name)}
+                </span>
               ))}
             </div>
           </div>
 
-          {/* Columna Derecha - Card de Acceso */}
-          <div className="flex items-center justify-center px-4">
-            <div className="w-full max-w-md rounded-2xl bg-zinc-900/70 border border-zinc-800 p-8 shadow-xl">
-              <div className="flex items-center justify-center mb-6">
-                <div className="h-20 w-40 flex items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950/40">
-                  <span className="text-sm font-medium text-zinc-300">Logo Encriptados Academy</span>
-                </div>
-              </div>
+          <div className="mt-8 relative z-10 rounded-[2rem] border border-white/10 bg-white/5 p-8 text-slate-300 shadow-[0_40px_120px_-80px_rgba(255,255,255,0.25)]">
+            <p className="text-sm leading-7">
+              Una experiencia global de software premium para traders y creadores Web3 que exigen un entorno elegante y seguro.
+            </p>
+          </div>
+        </section>
 
-              <form className="space-y-4" onSubmit={handleEmailPasswordLogin}>
-                <label className="flex flex-col text-sm text-slate-300">
-                  Correo electrónico
+        <section className="flex items-center justify-center bg-white px-6 py-10 sm:px-12 sm:py-16 text-slate-900">
+          <div className="w-full max-w-md">
+            <div className="mb-10">
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Acceso premium</p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">Inicia sesión en tu Aula Virtual</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-500">Ingresa tu correo y contraseña para desbloquear contenido exclusivo DeFi.</p>
+            </div>
+
+            <form onSubmit={handleEmailPasswordLogin} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-slate-700">Correo electrónico</label>
+                <div className="relative mt-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-300">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">📧</span>
                   <input
                     type="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
-                    className="mt-2 rounded-2xl border border-slate-700 bg-zinc-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                     placeholder="tu@correo.com"
+                    className="w-full border-0 bg-transparent pl-10 text-slate-900 outline-none placeholder:text-slate-400"
                   />
-                </label>
+                </div>
+              </div>
 
-                <label className="flex flex-col text-sm text-slate-300">
-                  Contraseña
+              <div>
+                <label className="block text-sm font-medium text-slate-700">Contraseña</label>
+                <div className="relative mt-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-300">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔒</span>
                   <input
                     type="password"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    className="mt-2 rounded-2xl border border-slate-700 bg-zinc-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                     placeholder="********"
+                    className="w-full border-0 bg-transparent pl-10 text-slate-900 outline-none placeholder:text-slate-400"
                   />
-                </label>
-
-                <button
-                  type="submit"
-                  className="w-full rounded-full bg-amber-500 px-6 py-3 text-base font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition duration-200 hover:bg-amber-400"
-                >
-                  Iniciar Sesión
-                </button>
-
-                <div className="text-center mt-2">
-                  <button type="button" onClick={handleMagicLink} className="text-sm text-amber-300 hover:underline">Enviar Magic Link</button>
                 </div>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        {status ? (
-          <p className="mt-6 text-center text-sm text-slate-300">{status}</p>
-        ) : null}
-      </div>
-      {/* Features Grid - ¿Por qué Encriptados Academy? */}
-      <div className="mt-12 mx-auto max-w-6xl px-4">
-        <div className="text-center">
-          <h3 className="text-2xl font-semibold text-white">¿Por qué Encriptados Academy?</h3>
-          <p className="mt-2 text-sm text-zinc-400">Educación profesional en DeFi, rendimiento avanzado y seguridad patrimonial.</p>
-        </div>
-
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Card 1 */}
-          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-pink-500/20 flex items-center justify-center text-pink-300">UNI</div>
-              <div>
-                <h4 className="font-semibold text-white">Estratégias Uniswap V3/V4</h4>
-                <p className="mt-2 text-sm text-zinc-400">Aprende a diseñar rangos de precio óptimos y maximizar tus fees mediante el rebalanceo estratégico de pools dinámicas.</p>
               </div>
-            </div>
-          </div>
 
-          {/* Card 2 */}
-          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-emerald-400/20 flex items-center justify-center text-emerald-400">AAV</div>
-              <div>
-                <h4 className="font-semibold text-white">Lending & Borrowing</h4>
-                <p className="mt-2 text-sm text-zinc-400">Domina protocolos como Aave para usar tu colateral estratégicamente, abrir líneas de crédito descentralizadas y optimizar tu capital.</p>
-              </div>
-            </div>
-          </div>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full rounded-3xl bg-slate-950 px-6 py-3 text-base font-semibold text-white shadow-xl shadow-slate-950/20 transition duration-200 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting ? "Iniciando..." : "Iniciar Sesión"}
+              </button>
 
-          {/* Card 3 */}
-          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-amber-400/20 flex items-center justify-center text-amber-300">TAX</div>
-              <div>
-                <h4 className="font-semibold text-white">Tranquilidad Legal y Fiscal</h4>
-                <p className="mt-2 text-sm text-zinc-400">Opera con la seguridad de saber cómo declarar de forma correcta tus rendimientos DeFi, logrando total paz jurídica en 2026.</p>
-              </div>
-            </div>
-          </div>
+              {status ? (
+                <p className="text-center text-sm text-rose-600">{status}</p>
+              ) : null}
+            </form>
 
-          {/* Card 4 */}
-          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-blue-400/20 flex items-center justify-center text-blue-300">🔒</div>
-              <div>
-                <h4 className="font-semibold text-white">Custodia Profesional</h4>
-                <p className="mt-2 text-sm text-zinc-400">Implementa protocolos técnicos avanzados y aprende el manejo seguro de hardware wallets para que nadie pueda tocar tus fondos.</p>
-              </div>
+            <div className="relative my-8">
+              <div className="absolute inset-x-0 top-1/2 h-px bg-slate-200" />
+              <span className="relative bg-white px-4 text-sm text-slate-500">o</span>
             </div>
-          </div>
 
-          {/* Card 5 */}
-          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-green-400/20 flex items-center justify-center text-green-300">📈</div>
-              <div>
-                <h4 className="font-semibold text-white">Calculadoras Dinámicas</h4>
-                <p className="mt-2 text-sm text-zinc-400">Acceso exclusivo a simuladores para proyectar tus rangos de liquidez, calcular impermanent loss y gestionar riesgos.</p>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={handleMagicLink}
+              className="w-full rounded-3xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition duration-200 hover:bg-slate-50"
+            >
+              Enviar Magic Link
+            </button>
           </div>
-
-          {/* Card 6 */}
-          <div className="rounded-xl bg-zinc-900/70 border border-zinc-800 p-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-purple-400/20 flex items-center justify-center text-purple-300">👥</div>
-              <div>
-                <h4 className="font-semibold text-white">Comunidad Encriptados Pro</h4>
-                <p className="mt-2 text-sm text-zinc-400">Resuelve tus dudas directamente con soporte especializado debajo de cada módulo y avanza de la mano con profesionales del ecosistema.</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        </section>
       </div>
     </div>
   );

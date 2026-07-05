@@ -48,7 +48,7 @@ export default function AdminPage() {
       const { data, error } = await supabase.auth.getSession();
       if (error || !data?.session) {
         setStatus("Debes iniciar sesión para acceder al panel de administrador.");
-        router.replace("/login");
+        router.replace("/");
         return;
       }
 

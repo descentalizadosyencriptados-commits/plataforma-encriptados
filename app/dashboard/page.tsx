@@ -3,6 +3,7 @@
 import { useEffect, useState, FormEvent } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // Inicializamos Supabase de forma segura en el cliente
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -89,7 +90,7 @@ export default function DashboardPage() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        router.push("/login");
+        router.replace("/");
         return;
       }
 
@@ -155,128 +156,117 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Card: Bitcoin */}
-            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-4 shadow-lg">
-              <div className="flex items-start gap-4">
+            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-5 shadow-lg card-hover-smooth transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-amber-400/30 hover:ring-2 hover:ring-amber-400/20">
+              <div className="flex items-center gap-6">
                 <div className="flex-shrink-0">
-                  <div className="h-14 w-14 rounded-xl bg-amber-600/10 flex items-center justify-center" style={{ border: '1px solid rgba(247,147,26,0.08)' }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="#F7931A" />
-                      <text x="12" y="16" textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">₿</text>
-                    </svg>
+                  <div className="h-28 w-28 rounded-full bg-slate-900/80 border border-slate-800 overflow-hidden">
+                    <Image src="/images/metrics/btc-cover.png" alt="Portada BTC" width={112} height={112} priority className="w-full h-full rounded-full object-cover" />
                   </div>
                 </div>
 
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <h3 className="text-lg font-bold text-amber-300">Curso Ahorro Inteligente BTC</h3>
-                  <p className="mt-1 text-sm text-zinc-400">Estrategias de acumulación, custodia y hodling profesional.</p>
-                </div>
-              </div>
+                  <p className="mt-2 text-sm text-zinc-400">Estrategias de acumulación, custodia y hodling profesional.</p>
 
-              <div className="mt-4 flex gap-4 items-center">
-                <div className="h-28 w-40 rounded-lg bg-gradient-to-br from-amber-600/10 to-zinc-900/10 border border-zinc-800 flex items-center justify-center text-amber-200">Portada BTC</div>
-                <div className="flex-1 flex gap-3">
-                  <button onClick={() => router.push('/dashboard/curso/btc')} className="flex-1 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 py-2 font-semibold">Iniciar Clase</button>
-                  <button className="rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-200">Ver Calculadora</button>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <button onClick={() => router.push('/dashboard/curso/btc')} className="flex-1 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 py-2 font-semibold transition">Iniciar Clase</button>
+                    <button className="flex-1 rounded-full border border-slate-800 bg-slate-950/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-900/20">Ver Calculadora</button>
+                  </div>
                 </div>
               </div>
             </article>
 
             {/* Card: Ethereum / DeFi */}
-            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-4 shadow-lg">
-              <div className="flex items-start gap-4">
+            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-5 shadow-lg card-hover-smooth transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-indigo-400/30 hover:ring-2 hover:ring-indigo-400/20">
+              <div className="flex items-center gap-6">
                 <div className="flex-shrink-0">
-                  <div className="h-14 w-14 rounded-xl bg-indigo-600/10 flex items-center justify-center" style={{ border: '1px solid rgba(98,126,234,0.08)' }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="#627EEA" />
-                      <path d="M8 12l4-4 4 4-4 4-4-4z" fill="#fff" />
-                    </svg>
+                  <div className="h-28 w-28 rounded-full bg-slate-900/80 border border-slate-800 overflow-hidden">
+                    <Image src="/images/metrics/eth-cover.png" alt="Portada ETH" width={112} height={112} priority className="w-full h-full rounded-full object-cover" />
                   </div>
                 </div>
 
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <h3 className="text-lg font-bold text-indigo-300">DeFi Avanzado (Ethereum)</h3>
-                  <p className="mt-1 text-sm text-zinc-400">Deep-dive en smart contracts, lending y estrategias avanzadas.</p>
-                </div>
-              </div>
+                  <p className="mt-2 text-sm text-zinc-400">Deep-dive en smart contracts, lending y estrategias avanzadas.</p>
 
-              <div className="mt-4 flex gap-4 items-center">
-                <div className="h-28 w-40 rounded-lg bg-gradient-to-br from-indigo-600/10 to-zinc-900/10 border border-zinc-800 flex items-center justify-center text-indigo-200">Portada ETH</div>
-                <div className="flex-1 flex gap-3">
-                  <button onClick={() => router.push('/dashboard/curso/defi')} className="flex-1 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 font-semibold">Iniciar Clase</button>
-                  <button className="rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-200">Ver Calculadora</button>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <button onClick={() => router.push('/dashboard/curso/defi')} className="flex-1 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 font-semibold transition">Iniciar Clase</button>
+                    <button className="flex-1 rounded-full border border-slate-800 bg-slate-950/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-900/20">Ver Calculadora</button>
+                  </div>
                 </div>
               </div>
             </article>
 
             {/* Card: Uniswap */}
-            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-4 shadow-lg">
-              <div className="flex items-start gap-4">
+            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-5 shadow-lg card-hover-smooth transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-pink-400/30 hover:ring-2 hover:ring-pink-400/20">
+              <div className="flex items-center gap-6">
                 <div className="flex-shrink-0">
-                  <div className="h-14 w-14 rounded-xl bg-pink-500/10 flex items-center justify-center" style={{ border: '1px solid rgba(255,0,122,0.06)' }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="#FF007A" />
-                      <path d="M7 12h10" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
+                  <div className="h-28 w-28 rounded-full bg-slate-900/80 border border-slate-800 overflow-hidden">
+                    <Image src="/images/metrics/uni-cover.png" alt="Portada UNI" width={112} height={112} priority className="w-full h-full rounded-full object-cover" />
                   </div>
                 </div>
 
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <h3 className="text-lg font-bold text-pink-300">Uniswap · Liquidez Concentrada</h3>
-                  <p className="mt-1 text-sm text-zinc-400">Optimiza rangos de liquidez y fees con estrategias prácticas.</p>
-                </div>
-              </div>
+                  <p className="mt-2 text-sm text-zinc-400">Optimiza rangos de liquidez y fees con estrategias prácticas.</p>
 
-              <div className="mt-4 flex gap-4 items-center">
-                <div className="h-28 w-40 rounded-lg bg-gradient-to-br from-pink-500/10 to-zinc-900/10 border border-zinc-800 flex items-center justify-center text-pink-200">Portada UNI</div>
-                <div className="flex-1 flex gap-3">
-                  <button className="flex-1 rounded-full bg-pink-500 hover:bg-pink-400 text-white py-2 font-semibold">Iniciar Clase</button>
-                  <button className="rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-200">Ver Calculadora</button>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <button className="flex-1 rounded-full bg-pink-500 hover:bg-pink-400 text-white py-2 font-semibold transition">Iniciar Clase</button>
+                    <button className="flex-1 rounded-full border border-slate-800 bg-slate-950/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-900/20">Ver Calculadora</button>
+                  </div>
                 </div>
               </div>
             </article>
 
             {/* Card: Aave */}
-            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-4 shadow-lg">
-              <div className="flex items-start gap-4">
+            <article className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-900/50 to-zinc-900 border border-zinc-800 p-5 shadow-lg card-hover-smooth transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-emerald-400/30 hover:ring-2 hover:ring-emerald-400/20">
+              <div className="flex items-center gap-6">
                 <div className="flex-shrink-0">
-                  <div className="h-14 w-14 rounded-xl bg-green-600/10 flex items-center justify-center" style={{ border: '1px solid rgba(46,182,125,0.08)' }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="#2EB67D" />
-                      <path d="M8 16l4-8 4 8" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                    </svg>
+                  <div className="h-28 w-28 rounded-full bg-slate-900/80 border border-slate-800 overflow-hidden">
+                    <Image src="/images/metrics/aave-cover.png" alt="Portada AAVE" width={112} height={112} priority className="w-full h-full rounded-full object-cover" />
                   </div>
                 </div>
 
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <h3 className="text-lg font-bold text-emerald-300">Aave · Lending & Borrowing</h3>
-                  <p className="mt-1 text-sm text-zinc-400">Prácticas de lending, colateral y optimización de posiciones.</p>
-                </div>
-              </div>
+                  <p className="mt-2 text-sm text-zinc-400">Prácticas de lending, colateral y optimización de posiciones.</p>
 
-              <div className="mt-4 flex gap-4 items-center">
-                <div className="h-28 w-40 rounded-lg bg-gradient-to-br from-green-600/10 to-zinc-900/10 border border-zinc-800 flex items-center justify-center text-green-200">Portada AAVE</div>
-                <div className="flex-1 flex gap-3">
-                  <button className="flex-1 rounded-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 py-2 font-semibold">Iniciar Clase</button>
-                  <button className="rounded-full border border-zinc-800 px-4 py-2 text-sm text-zinc-200">Ver Calculadora</button>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <button className="flex-1 rounded-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 py-2 font-semibold transition">Iniciar Clase</button>
+                    <button className="flex-1 rounded-full border border-slate-800 bg-slate-950/10 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-900/20">Ver Calculadora</button>
+                  </div>
                 </div>
               </div>
             </article>
           </div>
         </div>
 
-        {/* Columna Lateral - Información de Cuenta y Zona VIP */}
+        {/* Columna Lateral - Panel de Control de Usuario */}
         <div className="space-y-6">
-          <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
-            <h3 className="font-semibold text-zinc-300">Tu Membresía Actual</h3>
-            <p className="text-xl font-bold mt-2 text-amber-500">{userTier || "Sin Membresía Activa"}</p>
-          </div>
+          <div className="rounded-2xl border border-slate-800/60 bg-[#111625]/95 p-6 shadow-[0_25px_60px_-20px_rgba(0,0,0,0.65)] backdrop-blur-xl">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Control de cuenta</p>
+              <h3 className="mt-4 text-lg font-semibold text-slate-100">Tu Membresía Actual</h3>
+              <p className="mt-3 text-3xl font-bold text-amber-500">{userTier || "Sin Membresía Activa"}</p>
+            </div>
 
-          {/* Formulario: Cambiar contraseña */}
-          <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
-            <h3 className="font-semibold text-zinc-300">Actualizar Contraseña</h3>
-            <p className="text-sm text-zinc-400 mt-2">Cambia tu contraseña de forma segura desde tu cuenta.</p>
+            <div className="mt-8 space-y-6">
+              <div className="flex items-center justify-between gap-4 rounded-3xl border border-slate-800/70 bg-slate-950/90 p-5">
+                <div>
+                  <p className="text-sm text-slate-400">Nivel de acceso</p>
+                  <p className="mt-1 text-base font-semibold text-slate-100">{userTier || "Registro Básico"}</p>
+                </div>
+                <span className="inline-flex rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">Premium</span>
+              </div>
 
-            <ChangePasswordForm supabase={supabase} />
+              <div className="rounded-3xl border border-slate-800/70 bg-slate-950/90 p-5">
+                <h4 className="text-sm font-semibold text-slate-200">Actualizar contraseña</h4>
+                <p className="mt-2 text-sm text-slate-500">Protege tu cuenta con un password fuerte y actualizado.</p>
+                <div className="mt-5">
+                  <ChangePasswordForm supabase={supabase} />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Zona VIP exclusiva para el High Ticket o ADMIN */}

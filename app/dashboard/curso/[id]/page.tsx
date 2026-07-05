@@ -43,7 +43,7 @@ export default function CoursePage() {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        router.push("/login");
+        router.replace("/");
         return;
       }
 
