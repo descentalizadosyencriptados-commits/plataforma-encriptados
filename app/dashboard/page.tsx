@@ -139,7 +139,7 @@ export default function DashboardPage() {
             </button>
           )}
           <button 
-            onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
+            onClick={() => supabase.auth.signOut().then(() => router.push("/"))}
             className="bg-zinc-800 hover:bg-zinc-700 text-sm px-4 py-2 rounded-lg transition"
           >
             Cerrar Sesión
