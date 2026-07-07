@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
@@ -8,8 +8,8 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const CONTENT_TABLE = "course_contents";
+const COURSE_TIER = "Curso Ahorro Inteligente BTC";
 
-// Sincronizado exactamente con los nombres de tus productos reales
 const membershipOptions = [
   "Curso Ahorro Inteligente BTC",
   "DeFi Avanzado",
@@ -38,7 +38,7 @@ export default function AdminPage() {
   const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
-  const [membershipTier, setMembershipTier] = useState<MembershipTier>(membershipOptions[0]);
+  const [membershipTier, setMembershipTier] = useState<MembershipTier>(COURSE_TIER);
   const [contents, setContents] = useState<CourseContent[]>([]);
   const [editingContentId, setEditingContentId] = useState<number | null>(null);
   const [contentLoading, setContentLoading] = useState(false);
@@ -56,7 +56,6 @@ export default function AdminPage() {
         return;
       }
 
-      // 1. Validar sesión existente
       const { data, error } = await supabase.auth.getSession();
       if (error || !data?.session) {
         setStatus("Debes iniciar sesión para acceder al panel de administrador.");
@@ -67,7 +66,6 @@ export default function AdminPage() {
       const email = data.session.user.email;
       setUserEmail(email ?? null);
 
-      // 2. Validar rol ADMIN directamente en la tabla profiles de Supabase
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("membership_tier")
@@ -93,7 +91,7 @@ export default function AdminPage() {
       const { data, error } = await supabase
         .from(CONTENT_TABLE)
         .select("id, title, description, video_url, pdf_url, membership_tier")
-        .order("membership_tier", { ascending: true })
+        .eq("membership_tier", COURSE_TIER)
         .order("id", { ascending: true });
 
       if (error) {
@@ -102,7 +100,7 @@ export default function AdminPage() {
         return;
       }
 
-      setContents(data ?? []);
+      setContents((data ?? []) as CourseContent[]);
     } catch (error) {
       console.error("Error al cargar contenidos:", error);
       setStatus("Error inesperado al cargar la lista de contenidos.");
@@ -140,7 +138,7 @@ export default function AdminPage() {
       return;
     }
 
-    if (editingContentId) {
+    if (editingContentId !== null) {
       setStatus("Actualizando contenido en Supabase...");
       try {
         const { error } = await supabase
@@ -172,7 +170,6 @@ export default function AdminPage() {
     }
 
     setStatus("Guardando contenido en Supabase...");
-
     try {
       const { error } = await supabase.from(CONTENT_TABLE).insert([
         {
@@ -206,10 +203,15 @@ export default function AdminPage() {
     setVideoUrl(content.video_url);
     setPdfUrl(content.pdf_url);
     setMembershipTier(content.membership_tier);
-    setStatus("Modo edición activo. Actualiza los campos y guarda.");
+    setStatus("Modo edición activo. Edita los campos y actualiza.");
   };
 
   const handleDeleteContent = async (contentId: number) => {
+    if (!allowed) {
+      setStatus("No autorizado.");
+      return;
+    }
+
     setStatus("Eliminando contenido...");
     try {
       const { error } = await supabase.from(CONTENT_TABLE).delete().eq("id", contentId);
@@ -219,8 +221,8 @@ export default function AdminPage() {
         return;
       }
 
-      setStatus("🗑️ Contenido eliminado correctamente.");
       setContents((prev) => prev.filter((item) => item.id !== contentId));
+      setStatus("🗑️ Contenido eliminado correctamente.");
     } catch (error) {
       setStatus("Error inesperado al eliminar el contenido.");
       console.error("Supabase delete exception:", error);
@@ -228,10 +230,6 @@ export default function AdminPage() {
   };
 
   const isEditMode = editingContentId !== null;
-  const groupedContents = membershipOptions.map((tier) => ({
-    tier,
-    items: contents.filter((content) => content.membership_tier === tier),
-  }));
 
   if (loading) {
     return (
@@ -244,116 +242,107 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-slate-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-6xl space-y-8">
-        <header className="rounded-[2rem] border border-white/10 bg-slate-900/80 p-10 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.85)] backdrop-blur-xl">
-          <div className="flex justify-between items-start">
+        <header className="rounded-[2rem] border border-amber-300/20 bg-slate-900/70 p-10 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.85)] backdrop-blur-xl">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-amber-300/80">Administración Maestro</p>
               <h1 className="mt-4 text-4xl font-semibold text-amber-200 sm:text-5xl">Panel de Administración</h1>
+              <p className="mt-3 max-w-3xl text-slate-300">
+                Aquí puedes controlar todo el CRUD de las lecciones, videos y recursos del Curso Ahorro Inteligente BTC sin tocar directamente Supabase.
+              </p>
             </div>
-            <button 
+            <button
               onClick={() => router.push("/dashboard")}
-              className="bg-zinc-800 hover:bg-zinc-700 text-sm px-4 py-2 rounded-xl transition ring-1 ring-white/10"
+              className="self-start rounded-full border border-white/10 bg-slate-950 px-5 py-3 text-sm text-white transition hover:bg-slate-900"
             >
               Volver al Aula
             </button>
           </div>
-          <p className="mt-3 max-w-3xl text-slate-300">
-            Control de contenido multimedia, recursos de estudio y segmentación por membresía para tus estudiantes de Encriptados Academy.
-          </p>
-          <div className="mt-6 rounded-3xl bg-slate-950/70 p-6 text-slate-300 ring-1 ring-white/10">
+          <div className="mt-6 rounded-3xl bg-slate-950/80 p-6 text-slate-300 ring-1 ring-amber-300/10">
             <p className="text-sm text-slate-400">Administrador en sesión:</p>
             <p className="mt-2 font-medium text-amber-300">{userEmail}</p>
           </div>
         </header>
 
-        <main className="grid gap-8 lg:grid-cols-[1.5fr_0.9fr]">
+        <main className="grid gap-8 lg:grid-cols-[1.6fr_0.95fr]">
           <section className="rounded-[2rem] border border-white/10 bg-slate-900/70 p-8 shadow-lg shadow-slate-950/30">
             <div className="flex flex-col gap-4">
-              <h2 className="text-2xl font-semibold text-slate-50">Agregar nuevo contenido</h2>
+              <h2 className="text-2xl font-semibold text-slate-50">{isEditMode ? "Editar lección" : "Crear contenido nuevo"}</h2>
               <p className="text-slate-400">
-                Completa los datos para guardar una clase con su respectivo video de YouTube/Vimeo, material extra o calculadoras, y asígnalo al producto correspondiente.
+                Completa el formulario para crear o actualizar una clase del curso. Elige el producto y agrega el enlace del video junto al recurso adicional.
               </p>
             </div>
 
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
               <label className="flex flex-col gap-2 text-sm text-slate-300">
-                Título de la clase
+                Título de la lección
                 <input
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
                   className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                  placeholder="Ej. Estrategia de Rangos en Uniswap V3"
+                  placeholder="Ej. Estrategia de rangos BTC"
                 />
               </label>
 
               <label className="flex flex-col gap-2 text-sm text-slate-300">
-                Descripción del contenido
+                Descripción breve
                 <textarea
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
                   rows={4}
                   className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                  placeholder="Describe qué aprenderán los estudiantes en este video..."
+                  placeholder="Describe qué aprenderán los estudiantes en esta lección..."
                 />
               </label>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="flex flex-col gap-2 text-sm text-slate-300">
-                  Enlace del Video (Link)
+                  Enlace del video
                   <input
                     type="url"
                     value={videoUrl}
                     onChange={(event) => setVideoUrl(event.target.value)}
                     className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                    placeholder="https://youtube.com/... o vimeo..."
+                    placeholder="https://youtube.com/..."
                   />
                 </label>
                 <label className="flex flex-col gap-2 text-sm text-slate-300">
-                  Calculadora / PDF Extra (Link)
+                  Recurso / Excel / PDF
                   <input
                     type="url"
                     value={pdfUrl}
                     onChange={(event) => setPdfUrl(event.target.value)}
                     className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                    placeholder="https://drive.google.com/... (Plantillas/Excel)"
+                    placeholder="https://drive.google.com/..."
                   />
                 </label>
               </div>
 
-              <label className="flex flex-col gap-2 text-sm text-slate-300">
-                Vincular a este Producto / Membresía
-                <select
-                  value={membershipTier}
-                  onChange={(event) => setMembershipTier(event.target.value as MembershipTier)}
-                  className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                >
-                  {membershipOptions.map((option) => (
-                    <option key={option} value={option} className="bg-slate-950 text-white">
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="rounded-2xl border border-slate-700 bg-slate-950/80 p-4 text-sm text-slate-300">
+                <p className="text-xs uppercase tracking-[0.3em] text-amber-300/80">Producto asociado</p>
+                <p className="mt-2 font-medium text-slate-100">{COURSE_TIER}</p>
+                <p className="mt-1 text-xs text-slate-500">Todos los cambios se aplican solo a este curso.</p>
+              </div>
 
               <button
                 type="submit"
                 className="inline-flex w-full items-center justify-center rounded-full bg-amber-500 px-8 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition duration-300 ease-out hover:-translate-y-0.5 hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-950"
               >
-                {isEditMode ? "✅ Actualizar Cambios" : "🚀 Guardar Contenido en la Base de Datos"}
+                {isEditMode ? "Actualizar Cambios en la Base de Datos" : "Guardar Contenido en la Base de Datos"}
               </button>
             </form>
 
             {status ? (
-              <div className="mt-6 p-4 rounded-2xl bg-slate-950/50 border border-white/5 text-center text-sm font-medium text-amber-300">
+              <div className="mt-6 rounded-3xl border border-amber-300/10 bg-slate-950/80 p-4 text-sm font-medium text-amber-300">
                 {status}
               </div>
             ) : null}
 
-            <section className="mt-10 rounded-[2rem] border border-white/10 bg-slate-950/80 p-6">
-              <div className="flex items-center justify-between gap-4">
+            <section className="mt-10 rounded-[2rem] border border-white/10 bg-slate-950/80 p-6 shadow-inner shadow-slate-950/20">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-amber-300/80">Contenido existente</p>
-                  <h3 className="mt-2 text-2xl font-semibold text-slate-50">Clases y recursos por producto</h3>
+                  <p className="text-sm uppercase tracking-[0.3em] text-amber-300/80">Gestionar Clases Existentes</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-slate-50">Lista de lecciones del curso</h3>
                 </div>
                 <button
                   type="button"
@@ -365,63 +354,42 @@ export default function AdminPage() {
               </div>
 
               {contentLoading ? (
-                <p className="mt-6 text-slate-400">Cargando contenidos...</p>
+                <p className="mt-6 text-slate-400">Cargando lecciones...</p>
+              ) : contents.length === 0 ? (
+                <p className="mt-6 text-slate-400">No hay lecciones registradas aún.</p>
               ) : (
-                <div className="mt-6 space-y-6">
-                  {groupedContents.map(({ tier, items }) => (
-                    <div key={tier} className="rounded-3xl border border-white/10 bg-slate-900/80 p-4">
-                      <div className="mb-4 flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm uppercase tracking-[0.25em] text-amber-300/70">{tier}</p>
-                          <p className="mt-2 text-sm text-slate-400">{items.length} lección{items.length === 1 ? "" : "es"}</p>
+                <div className="mt-6 space-y-4">
+                  {contents.map((content) => (
+                    <div key={content.id} className="rounded-3xl border border-white/10 bg-slate-900/80 p-5 shadow-sm shadow-slate-950/10">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="min-w-0">
+                          <p className="text-sm uppercase tracking-[0.25em] text-amber-300/70">{content.membership_tier}</p>
+                          <h4 className="mt-2 text-lg font-semibold text-slate-50">{content.title}</h4>
+                          <p className="mt-2 line-clamp-2 text-sm text-slate-400">{content.description}</p>
+                          <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
+                            <span className="rounded-full bg-slate-950 px-3 py-1">Video: {content.video_url ? "Link" : "N/A"}</span>
+                            <span className="rounded-full bg-slate-950 px-3 py-1">Recurso: {content.pdf_url ? "Link" : "N/A"}</span>
+                            <span className="rounded-full bg-slate-950 px-3 py-1">ID: {content.id}</span>
+                          </div>
                         </div>
-                        <span className="rounded-full bg-slate-800 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-300">
-                          {items.length} items
-                        </span>
+
+                        <div className="flex flex-wrap gap-3">
+                          <button
+                            type="button"
+                            onClick={() => handleEditContent(content)}
+                            className="inline-flex items-center gap-2 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/15"
+                          >
+                            📝 Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteContent(content.id)}
+                            className="inline-flex items-center gap-2 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/15"
+                          >
+                            🗑️ Eliminar
+                          </button>
+                        </div>
                       </div>
-
-                      {items.length === 0 ? (
-                        <p className="text-slate-500">No hay contenido para este producto aún.</p>
-                      ) : (
-                        <div className="grid gap-4">
-                          {items.map((item) => (
-                            <article key={item.id} className="rounded-3xl border border-slate-800 bg-slate-950/80 p-4 shadow-sm shadow-slate-950/20">
-                              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                <div className="min-w-0 space-y-2">
-                                  <h4 className="text-lg font-semibold text-slate-50">{item.title}</h4>
-                                  <p className="line-clamp-2 text-sm text-slate-400">{item.description}</p>
-                                  <div className="flex flex-wrap gap-2 text-xs text-slate-500">
-                                    <span className="rounded-full bg-slate-900 px-2 py-1">ID: {item.id}</span>
-                                    <a href={item.video_url} target="_blank" rel="noreferrer" className="rounded-full bg-slate-900 px-2 py-1 text-amber-300 transition hover:bg-slate-800">
-                                      Video
-                                    </a>
-                                    <a href={item.pdf_url} target="_blank" rel="noreferrer" className="rounded-full bg-slate-900 px-2 py-1 text-slate-300 transition hover:bg-slate-800">
-                                      Recurso
-                                    </a>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-3">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleEditContent(item)}
-                                    className="inline-flex items-center gap-2 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/15"
-                                  >
-                                    📝 Editar
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteContent(item.id)}
-                                    className="inline-flex items-center gap-2 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/15"
-                                  >
-                                    🗑️ Eliminar
-                                  </button>
-                                </div>
-                              </div>
-                            </article>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
