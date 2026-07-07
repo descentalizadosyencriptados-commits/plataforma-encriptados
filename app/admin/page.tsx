@@ -18,6 +18,15 @@ const membershipOptions = [
 
 type MembershipTier = (typeof membershipOptions)[number];
 
+type CourseContent = {
+  id: number;
+  title: string;
+  description: string;
+  video_url: string;
+  pdf_url: string;
+  membership_tier: MembershipTier;
+};
+
 export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -30,6 +39,9 @@ export default function AdminPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
   const [membershipTier, setMembershipTier] = useState<MembershipTier>(membershipOptions[0]);
+  const [contents, setContents] = useState<CourseContent[]>([]);
+  const [editingContentId, setEditingContentId] = useState<number | null>(null);
+  const [contentLoading, setContentLoading] = useState(false);
   const [studentEmail, setStudentEmail] = useState("");
   const [studentMembership, setStudentMembership] = useState<string>("Curso Ahorro Inteligente BTC");
   const [creatingStudent, setCreatingStudent] = useState(false);
@@ -75,6 +87,45 @@ export default function AdminPage() {
     validateAdmin();
   }, [router]);
 
+  const loadContents = async () => {
+    setContentLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from(CONTENT_TABLE)
+        .select("id, title, description, video_url, pdf_url, membership_tier")
+        .order("membership_tier", { ascending: true })
+        .order("id", { ascending: true });
+
+      if (error) {
+        console.error("Supabase fetch contents error:", error);
+        setStatus("Error al cargar la lista de contenidos.");
+        return;
+      }
+
+      setContents(data ?? []);
+    } catch (error) {
+      console.error("Error al cargar contenidos:", error);
+      setStatus("Error inesperado al cargar la lista de contenidos.");
+    } finally {
+      setContentLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (allowed) {
+      loadContents();
+    }
+  }, [allowed]);
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setVideoUrl("");
+    setPdfUrl("");
+    setMembershipTier(membershipOptions[0]);
+    setEditingContentId(null);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setStatus(null);
@@ -87,6 +138,37 @@ export default function AdminPage() {
     if (!title || !description || !videoUrl || !pdfUrl) {
       setStatus("Completa todos los campos antes de guardar.");
       return;
+    }
+
+    if (editingContentId) {
+      setStatus("Actualizando contenido en Supabase...");
+      try {
+        const { error } = await supabase
+          .from(CONTENT_TABLE)
+          .update({
+            title,
+            description,
+            video_url: videoUrl,
+            pdf_url: pdfUrl,
+            membership_tier: membershipTier,
+          })
+          .eq("id", editingContentId);
+
+        if (error) {
+          setStatus("Error al actualizar el contenido. Revisa la consola.");
+          console.error("Supabase update error:", error);
+          return;
+        }
+
+        setStatus("✅ Contenido actualizado correctamente.");
+        resetForm();
+        await loadContents();
+        return;
+      } catch (error) {
+        setStatus("Error inesperado al actualizar el contenido.");
+        console.error("Supabase update exception:", error);
+        return;
+      }
     }
 
     setStatus("Guardando contenido en Supabase...");
@@ -109,16 +191,47 @@ export default function AdminPage() {
       }
 
       setStatus("🎉 ¡Contenido guardado correctamente en la academia!");
-      setTitle("");
-      setDescription("");
-      setVideoUrl("");
-      setPdfUrl("");
-      setMembershipTier(membershipOptions[0]);
+      resetForm();
+      await loadContents();
     } catch (error) {
       setStatus("Error inesperado al guardar el contenido.");
       console.error("Supabase save exception:", error);
     }
   };
+
+  const handleEditContent = (content: CourseContent) => {
+    setEditingContentId(content.id);
+    setTitle(content.title);
+    setDescription(content.description);
+    setVideoUrl(content.video_url);
+    setPdfUrl(content.pdf_url);
+    setMembershipTier(content.membership_tier);
+    setStatus("Modo edición activo. Actualiza los campos y guarda.");
+  };
+
+  const handleDeleteContent = async (contentId: number) => {
+    setStatus("Eliminando contenido...");
+    try {
+      const { error } = await supabase.from(CONTENT_TABLE).delete().eq("id", contentId);
+      if (error) {
+        setStatus("Error al eliminar el contenido. Revisa la consola.");
+        console.error("Supabase delete error:", error);
+        return;
+      }
+
+      setStatus("🗑️ Contenido eliminado correctamente.");
+      setContents((prev) => prev.filter((item) => item.id !== contentId));
+    } catch (error) {
+      setStatus("Error inesperado al eliminar el contenido.");
+      console.error("Supabase delete exception:", error);
+    }
+  };
+
+  const isEditMode = editingContentId !== null;
+  const groupedContents = membershipOptions.map((tier) => ({
+    tier,
+    items: contents.filter((content) => content.membership_tier === tier),
+  }));
 
   if (loading) {
     return (
@@ -226,7 +339,7 @@ export default function AdminPage() {
                 type="submit"
                 className="inline-flex w-full items-center justify-center rounded-full bg-amber-500 px-8 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-amber-500/20 transition duration-300 ease-out hover:-translate-y-0.5 hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-950"
               >
-                🚀 Guardar Contenido en la Base de Datos
+                {isEditMode ? "✅ Actualizar Cambios" : "🚀 Guardar Contenido en la Base de Datos"}
               </button>
             </form>
 
@@ -235,6 +348,85 @@ export default function AdminPage() {
                 {status}
               </div>
             ) : null}
+
+            <section className="mt-10 rounded-[2rem] border border-white/10 bg-slate-950/80 p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.3em] text-amber-300/80">Contenido existente</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-slate-50">Clases y recursos por producto</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="rounded-full border border-white/10 bg-slate-900 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-800"
+                >
+                  Limpiar formulario
+                </button>
+              </div>
+
+              {contentLoading ? (
+                <p className="mt-6 text-slate-400">Cargando contenidos...</p>
+              ) : (
+                <div className="mt-6 space-y-6">
+                  {groupedContents.map(({ tier, items }) => (
+                    <div key={tier} className="rounded-3xl border border-white/10 bg-slate-900/80 p-4">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm uppercase tracking-[0.25em] text-amber-300/70">{tier}</p>
+                          <p className="mt-2 text-sm text-slate-400">{items.length} lección{items.length === 1 ? "" : "es"}</p>
+                        </div>
+                        <span className="rounded-full bg-slate-800 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-300">
+                          {items.length} items
+                        </span>
+                      </div>
+
+                      {items.length === 0 ? (
+                        <p className="text-slate-500">No hay contenido para este producto aún.</p>
+                      ) : (
+                        <div className="grid gap-4">
+                          {items.map((item) => (
+                            <article key={item.id} className="rounded-3xl border border-slate-800 bg-slate-950/80 p-4 shadow-sm shadow-slate-950/20">
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="min-w-0 space-y-2">
+                                  <h4 className="text-lg font-semibold text-slate-50">{item.title}</h4>
+                                  <p className="line-clamp-2 text-sm text-slate-400">{item.description}</p>
+                                  <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                                    <span className="rounded-full bg-slate-900 px-2 py-1">ID: {item.id}</span>
+                                    <a href={item.video_url} target="_blank" rel="noreferrer" className="rounded-full bg-slate-900 px-2 py-1 text-amber-300 transition hover:bg-slate-800">
+                                      Video
+                                    </a>
+                                    <a href={item.pdf_url} target="_blank" rel="noreferrer" className="rounded-full bg-slate-900 px-2 py-1 text-slate-300 transition hover:bg-slate-800">
+                                      Recurso
+                                    </a>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEditContent(item)}
+                                    className="inline-flex items-center gap-2 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/15"
+                                  >
+                                    📝 Editar
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteContent(item.id)}
+                                    className="inline-flex items-center gap-2 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/15"
+                                  >
+                                    🗑️ Eliminar
+                                  </button>
+                                </div>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </section>
 
           <aside className="rounded-[2rem] border border-white/10 bg-slate-900/70 p-8 shadow-lg shadow-slate-950/30 h-fit">
