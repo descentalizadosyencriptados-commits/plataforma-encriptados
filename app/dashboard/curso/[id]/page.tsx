@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter, useParams } from "next/navigation";
 
@@ -8,284 +8,178 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-type Lesson = {
+interface Lesson {
   id: string;
   title: string;
-  description?: string | null;
-  video_url?: string | null;
-  pdf_url?: string | null;
-  membership_tier?: string | null;
-};
+  description: string;
+  video_url: string;
+  order_index: number;
+  download_url?: string;   // Nuevas columnas dinámicas
+  download_label?: string; // Nombre personalizado del botón
+}
 
 export default function CoursePage() {
   const router = useRouter();
-  const params = useParams();
-  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
-
-  const [courseName, setCourseName] = useState<string | null>(null);
+  const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   useEffect(() => {
-    const mapped = id === "btc" ? "Curso Ahorro Inteligente BTC" : id === "defi" ? "DeFi Avanzado" : null;
-    setCourseName(mapped);
-  }, [id]);
-
-  useEffect(() => {
-    if (!courseName) {
-      setLoading(false);
-      return;
-    }
-
-    let mounted = true;
-    async function load() {
+    async function fetchCourseAndLessons() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.replace("/");
         return;
       }
 
-      const { data, error } = await supabase
-        .from("course_contents")
+      const { data: lessonsData } = await supabase
+        .from("lessons")
         .select("*")
-        .eq("membership_tier", courseName);
+        .eq("course_id", id)
+        .order("order_index", { ascending: true });
 
-      if (error) {
-        console.error("Error completo de Supabase:", error);
-      } else if (mounted) {
-        setLessons((data as Lesson[]) || []);
-        setSelectedIndex(0);
+      if (lessonsData && lessonsData.length > 0) {
+        setLessons(lessonsData);
       }
-
       setLoading(false);
     }
 
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, [courseName, router]);
-
-  function toEmbedUrl(url?: string | null) {
-    if (!url) return "";
-    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([A-Za-z0-9_-]{11})/);
-    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
-    if (url.includes("/embed/")) return url;
-    return url;
-  }
-
-  const current = lessons[selectedIndex];
-  const isBtcCourse = courseName === "Curso Ahorro Inteligente BTC";
-
-  const btcModules = [
-    {
-      title: "Introducción al Ahorro en BTC",
-      description: "Comprende por qué el bitcoin puede convertirse en una herramienta de ahorro de largo plazo y cómo construir disciplina financiera.",
-    },
-    {
-      title: "Estrategia de Acumulación",
-      description: "Diseña un plan de aportes consistente, con metas claras y reglas simples para acumular sin tomar riesgos innecesarios.",
-    },
-    {
-      title: "Custodia Profesional",
-      description: "Aprende a proteger tu patrimonio con criterios de seguridad, organización y gestión responsable del activo.",
-    },
-  ];
+    if (id) fetchCourseAndLessons();
+  }, [id, router]);
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-100">
-        <p className="animate-pulse text-zinc-400">Cargando contenido...</p>
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
+        <p className="text-zinc-400 animate-pulse">Cargando contenido del módulo...</p>
       </div>
     );
   }
 
-  if (!courseName) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-100">
-        <p className="text-zinc-400">Curso no encontrado.</p>
-      </div>
-    );
-  }
+  const currentLesson = lessons[selectedIndex];
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.12),transparent_35%),linear-gradient(135deg,#09090b_0%,#020617_100%)] bg-zinc-950 p-4 text-zinc-100 md:p-8 lg:p-12">
-      <div className="mx-auto max-w-[1600px]">
-        {/* HEADER */}
-        <header className="mb-8 rounded-3xl border border-amber-500/20 bg-zinc-900/70 p-6 shadow-2xl shadow-black/30 backdrop-blur">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="mb-2 text-sm font-medium uppercase tracking-[0.35em] text-amber-500">
-                Academia Encriptados
-              </p>
-              <h1 className="text-3xl font-semibold text-white md:text-4xl">{courseName}</h1>
-              <p className="mt-3 max-w-2xl text-sm text-zinc-400 md:text-base">
-                {isBtcCourse
-                  ? "Una experiencia premium para entender el ahorro inteligente en bitcoin, construir disciplina de acumulación y proteger tu patrimonio con criterio."
-                  : "Explora cada clase del curso con contenido guiado, recursos complementarios y una experiencia visual más cuidada."}
-              </p>
-            </div>
-            {isBtcCourse && (
-              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-                Módulo 1 · Ahorro Inteligente en BTC
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 md:p-12">
+      {/* Botón Volver */}
+      <button 
+        onClick={() => router.push("/dashboard")}
+        className="mb-8 text-sm text-zinc-400 hover:text-amber-500 transition flex items-center gap-2"
+      >
+        ← Volver al Panel Principal
+      </button>
+
+      {/* Encabezado del Curso */}
+      <header className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-gradient-to-r from-zinc-900 via-zinc-950 to-zinc-900 p-8 mb-8 shadow-2xl">
+        <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-500">Academia Encriptados</span>
+        <h1 className="text-3xl font-black mt-2 text-zinc-100">Curso Ahorro Inteligente BTC</h1>
+        <p className="mt-2 text-sm text-zinc-400 max-w-2xl">
+          Estrategias y herramientas prácticas de acumulación, analítica y custodia profesional de activos digitales.
+        </p>
+      </header>
+
+      {/* Grid Principal Inferior en Dos Columnas */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        
+        {/* COLUMNA IZQUIERDA (~70%) - VIDEO */}
+        <div className="lg:col-span-2 space-y-6">
+          {currentLesson ? (
+            <div className="space-y-4">
+              <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-black aspect-video shadow-2xl">
+                <iframe
+                  src={currentLesson.video_url}
+                  className="absolute top-0 left-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
               </div>
-            )}
-          </div>
-        </header>
+              <div>
+                <span className="text-xs font-semibold text-amber-400 uppercase tracking-widest">Clase Actual</span>
+                <h2 className="text-2xl font-bold text-zinc-100 mt-1">{currentLesson.title}</h2>
+                <p className="text-sm text-zinc-400 mt-2 leading-relaxed">{currentLesson.description}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-12 text-center rounded-2xl border border-zinc-800 bg-zinc-900/20 text-zinc-500">
+              No hay clases cargadas en este módulo todavía.
+            </div>
+          )}
+        </div>
 
-        {/* LAYOUT PRINCIPAL: 70% VIDEO / 30% SIDEBAR */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[7fr_3fr] lg:items-start">
-          {/* ===================== COLUMNA IZQUIERDA (~70%) ===================== */}
-          <main className="space-y-6">
-            {/* 1. TARJETAS INFORMATIVAS DE MÓDULOS */}
-            {isBtcCourse && (
-              <section className="grid gap-4 md:grid-cols-3">
-                {btcModules.map((module) => (
-                  <article
-                    key={module.title}
-                    className="rounded-2xl border border-zinc-800/80 bg-zinc-900/70 p-4 shadow-lg shadow-black/20 backdrop-blur"
-                  >
-                    <h3 className="text-base font-semibold text-amber-400">{module.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-400">{module.description}</p>
-                  </article>
-                ))}
-              </section>
-            )}
-
-            {/* 2. BANNER DE RECURSO DESTACADO - ANCHO COMPLETO, ANTES DEL VIDEO */}
-            {isBtcCourse && (
-              <div className="flex w-full flex-col items-start justify-between gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-5 py-4 sm:flex-row sm:items-center">
-                <div className="flex items-center gap-3">
-                  <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className="h-5 w-5 shrink-0 text-amber-500"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 2a1 1 0 0 1 1 1v11.17l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V3a1 1 0 0 1 1-1Zm-8 18a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1Z"
-                    />
-                  </svg>
-                  <span className="text-sm font-semibold text-amber-100 sm:text-base">
-                    Bitácora de Inversión BTC (Excel Automatizado)
-                  </span>
-                </div>
-
+        {/* COLUMNA DERECHA (~30%) - RECURSOS Y LISTA DE CLASES */}
+        <div className="space-y-6">
+          
+          {/* SECCIÓN: RECURSOS DINÁMICOS POR CLASE */}
+          <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-b from-amber-500/5 to-transparent p-5 shadow-lg">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-amber-400 mb-3">Material de Estudio</h3>
+            
+            {currentLesson && currentLesson.download_url ? (
+              <div>
+                <p className="text-xs text-zinc-400 mb-4">Descarga el recurso exclusivo seleccionado para complementar este video.</p>
                 <a
-                  href="/downloads/BTC_FINAL.xlsx"
+                  href={currentLesson.download_url}
                   download
-                  className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-zinc-950 shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-400 hover:shadow-amber-400/30"
+                  className="group flex items-center justify-between gap-3 w-full rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-left transition hover:bg-amber-500 hover:text-zinc-950 duration-300"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className="h-4 w-4 transition-transform group-hover:translate-y-0.5"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 3a1 1 0 0 1 1 1v8.17l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42l2.3 2.3V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z"
-                    />
-                  </svg>
-                  Descargar
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-200 group-hover:text-zinc-950 transition line-clamp-1">
+                      {currentLesson.download_label || "Descargar Recurso de Apoyo"}
+                    </p>
+                    <p className="text-[10px] text-zinc-500 group-hover:text-zinc-900 transition mt-0.5">
+                      Haz clic para iniciar descarga instantánea
+                    </p>
+                  </div>
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-900/60 border border-zinc-800 text-amber-400 group-hover:bg-zinc-950 group-hover:text-amber-400 transition">
+                    📥
+                  </div>
                 </a>
               </div>
+            ) : (
+              <p className="text-xs text-zinc-500 italic py-2">
+                No se requieren lecturas ni plantillas adicionales para esta clase.
+              </p>
             )}
+          </div>
 
-            {/* 3. REPRODUCTOR DE VIDEO - INMEDIATAMENTE ABAJO DEL BANNER */}
-            <section className="rounded-3xl border border-zinc-800/90 bg-zinc-900/70 p-6 shadow-2xl shadow-black/20 backdrop-blur">
-              {current ? (
-                <>
-                  <div className="relative mb-4 h-0 w-full overflow-hidden rounded-2xl bg-black pb-[56.25%] ring-1 ring-zinc-800/80">
-                    {current.video_url ? (
-                      <iframe
-                        src={toEmbedUrl(current.video_url)}
-                        title={current.title}
-                        className="absolute inset-0 h-full w-full"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-zinc-500">
-                        Video no disponible
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-500">
-                        Clase actual
-                      </p>
-                      <h3 className="mt-2 text-2xl font-semibold text-white">{current.title}</h3>
-                      {current.description && (
-                        <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-400">{current.description}</p>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                      {current.pdf_url && (
-                        <a
-                          href={current.pdf_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-amber-400"
-                        >
-                          Material Extra
-                        </a>
-                      )}
-                      {current.pdf_url && current.pdf_url.includes("calculator") && (
-                        <a
-                          href={current.pdf_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="rounded-full border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-zinc-300 transition hover:bg-zinc-700"
-                        >
-                          Abrir Calculadora
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="text-zinc-500">Selecciona una lección para empezar.</div>
-              )}
-            </section>
-          </main>
-
-          {/* ===================== COLUMNA DERECHA (~30%) - FIJA ===================== */}
-          <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-            <div className="rounded-3xl border border-zinc-800/90 bg-zinc-900/40 p-4 shadow-lg shadow-black/20 backdrop-blur-md">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white">Ruta de clases</h2>
-                <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-400">
-                  {lessons.length} clases
-                </span>
-              </div>
-              <ul className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
-                {lessons.length === 0 && <li className="text-sm text-zinc-500">No hay lecciones disponibles.</li>}
-                {lessons.map((les, idx) => (
+          {/* SECCIÓN: RUTA DE CLASES */}
+          <aside className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 shadow-lg backdrop-blur-md">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800/60">
+              <h3 className="text-sm font-bold text-zinc-200">Ruta de clases</h3>
+              <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
+                {lessons.length} clases
+              </span>
+            </div>
+            
+            <ul className="max-h-[380px] space-y-2 overflow-y-auto pr-1">
+              {lessons.map((les, idx) => {
+                const isSelected = idx === selectedIndex;
+                return (
                   <li key={les.id}>
                     <button
                       type="button"
                       onClick={() => setSelectedIndex(idx)}
-                      className={`w-full rounded-2xl border p-3 text-left transition ${
-                        idx === selectedIndex
-                          ? "border-amber-500/30 bg-amber-500/10"
-                          : "border-transparent bg-zinc-950/40 hover:border-zinc-700 hover:bg-zinc-800/70"
+                      className={`w-full rounded-xl border p-3 text-left transition duration-200 ${
+                        isSelected
+                          ? "border-amber-500/40 bg-amber-500/10 text-zinc-100"
+                          : "border-transparent bg-zinc-950/40 hover:border-zinc-800 hover:bg-zinc-900/50 text-zinc-400"
                       }`}
                     >
-                      <div className="text-sm font-semibold text-white">{les.title}</div>
+                      <p className={`text-xs font-semibold ${isSelected ? "text-amber-400" : "text-zinc-300"}`}>
+                        {les.title}
+                      </p>
                       {les.description && (
-                        <div className="mt-1 text-xs text-zinc-500 line-clamp-2">{les.description}</div>
+                        <p className="mt-1 text-[11px] text-zinc-500 line-clamp-1">
+                          {les.description}
+                        </p>
                       )}
                     </button>
                   </li>
-                ))}
-              </ul>
-            </div>
+                );
+              })}
+            </ul>
           </aside>
+
         </div>
+
       </div>
     </div>
   );
