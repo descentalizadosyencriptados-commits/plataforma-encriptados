@@ -110,12 +110,15 @@ export default function CoursePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.15),transparent_30%),linear-gradient(135deg,#09090b_0%,#020617_100%)] bg-zinc-950 p-4 text-zinc-100 md:p-8 lg:p-12">
-      <div className="mx-auto max-w-7xl">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.12),transparent_35%),linear-gradient(135deg,#09090b_0%,#020617_100%)] bg-zinc-950 p-4 text-zinc-100 md:p-8 lg:p-12">
+      <div className="mx-auto max-w-[1600px]">
+        {/* HEADER */}
         <header className="mb-8 rounded-3xl border border-amber-500/20 bg-zinc-900/70 p-6 shadow-2xl shadow-black/30 backdrop-blur">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="mb-2 text-sm font-medium uppercase tracking-[0.35em] text-amber-500">Academia Encriptados</p>
+              <p className="mb-2 text-sm font-medium uppercase tracking-[0.35em] text-amber-500">
+                Academia Encriptados
+              </p>
               <h1 className="text-3xl font-semibold text-white md:text-4xl">{courseName}</h1>
               <p className="mt-3 max-w-2xl text-sm text-zinc-400 md:text-base">
                 {isBtcCourse
@@ -131,42 +134,17 @@ export default function CoursePage() {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-          <aside className="lg:col-span-1">
-            <div className="h-full rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-4 shadow-lg shadow-black/20 backdrop-blur">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white">Ruta de clases</h2>
-                <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-400">
-                  {lessons.length} clases
-                </span>
-              </div>
-              <ul className="space-y-2">
-                {lessons.length === 0 && <li className="text-sm text-zinc-500">No hay lecciones disponibles.</li>}
-                {lessons.map((les, idx) => (
-                  <li key={les.id}>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedIndex(idx)}
-                      className={`w-full rounded-2xl border p-3 text-left transition ${
-                        idx === selectedIndex
-                          ? "border-amber-500/30 bg-amber-500/10"
-                          : "border-transparent bg-zinc-950/40 hover:border-zinc-700 hover:bg-zinc-800/70"
-                      }`}
-                    >
-                      <div className="text-sm font-semibold text-white">{les.title}</div>
-                      {les.description && <div className="mt-1 text-xs text-zinc-500 line-clamp-2">{les.description}</div>}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </aside>
-
-          <main className="space-y-6 lg:col-span-3">
+        {/* LAYOUT PRINCIPAL: 70% VIDEO / 30% SIDEBAR */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[7fr_3fr] lg:items-start">
+          {/* ===================== COLUMNA IZQUIERDA (~70%) ===================== */}
+          <main className="space-y-6">
             {isBtcCourse && (
               <section className="grid gap-4 md:grid-cols-3">
                 {btcModules.map((module) => (
-                  <article key={module.title} className="rounded-2xl border border-zinc-800/80 bg-zinc-900/70 p-4 shadow-lg shadow-black/20 backdrop-blur">
+                  <article
+                    key={module.title}
+                    className="rounded-2xl border border-zinc-800/80 bg-zinc-900/70 p-4 shadow-lg shadow-black/20 backdrop-blur"
+                  >
                     <h3 className="text-base font-semibold text-amber-400">{module.title}</h3>
                     <p className="mt-2 text-sm leading-6 text-zinc-400">{module.description}</p>
                   </article>
@@ -175,33 +153,9 @@ export default function CoursePage() {
             )}
 
             <section className="rounded-3xl border border-zinc-800/90 bg-zinc-900/70 p-6 shadow-2xl shadow-black/20 backdrop-blur">
-              {isBtcCourse && (
-                <div className="mb-6 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-400">Recursos de Inversión</p>
-                      <h4 className="mt-2 text-lg font-semibold text-white">Bitácora de Ahorro Inteligente BTC</h4>
-                      <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300">
-                        Descarga la hoja de cálculo automatizada para registrar aportes, promedios y el seguimiento de tu estrategia de ahorro sostenible.
-                      </p>
-                    </div>
-                    <a
-                      href="/downloads/BTC_FINAL.xlsx"
-                      download
-                      className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-amber-400"
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
-                        <path fill="currentColor" d="M12 3a1 1 0 0 1 1 1v8.17l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42l2.3 2.3V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z" />
-                      </svg>
-                      Descargar Bitácora de Ahorro Inteligente BTC (Excel Automatizado)
-                    </a>
-                  </div>
-                </div>
-              )}
-
               {current ? (
                 <>
-                  <div className="mb-4 h-0 w-full overflow-hidden rounded-2xl bg-black pb-[56.25%]">
+                  <div className="relative mb-4 h-0 w-full overflow-hidden rounded-2xl bg-black pb-[56.25%] ring-1 ring-zinc-800/80">
                     {current.video_url ? (
                       <iframe
                         src={toEmbedUrl(current.video_url)}
@@ -212,19 +166,25 @@ export default function CoursePage() {
                         allowFullScreen
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-zinc-500">Video no disponible</div>
+                      <div className="absolute inset-0 flex items-center justify-center text-zinc-500">
+                        Video no disponible
+                      </div>
                     )}
                   </div>
 
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-500">Clase actual</p>
+                      <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-500">
+                        Clase actual
+                      </p>
                       <h3 className="mt-2 text-2xl font-semibold text-white">{current.title}</h3>
-                      {current.description && <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-400">{current.description}</p>}
+                      {current.description && (
+                        <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-400">{current.description}</p>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-3">
                       {current.pdf_url && (
-                        <a
+                        
                           href={current.pdf_url}
                           target="_blank"
                           rel="noreferrer"
@@ -234,7 +194,7 @@ export default function CoursePage() {
                         </a>
                       )}
                       {current.pdf_url && current.pdf_url.includes("calculator") && (
-                        <a
+                        
                           href={current.pdf_url}
                           target="_blank"
                           rel="noreferrer"
@@ -251,6 +211,77 @@ export default function CoursePage() {
               )}
             </section>
           </main>
+
+          {/* ===================== COLUMNA DERECHA (~30%) - FIJA ===================== */}
+          <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
+            {/* TARJETA DESTACADA: RECURSOS INTELIGENTES DE INVERSIÓN */}
+            <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-zinc-900/40 p-6 shadow-2xl shadow-black/40 backdrop-blur-md">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
+                Recursos Inteligentes de Inversión
+              </p>
+              <h4 className="mt-3 text-xl font-semibold text-white">
+                Bitácora de Ahorro Inteligente BTC
+              </h4>
+              <p className="mt-3 text-sm leading-6 text-zinc-300">
+                Descarga la hoja de cálculo automatizada para registrar aportes, promedios de compra y el
+                seguimiento en tiempo real de tu estrategia de acumulación.
+              </p>
+
+              
+                href="/downloads/BTC_FINAL.xlsx"
+                download
+                className="group mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500 px-4 py-3 text-sm font-semibold text-zinc-950 shadow-lg shadow-amber-500/20 transition-all hover:border-amber-400 hover:bg-amber-400 hover:shadow-amber-400/30"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  className="h-5 w-5 transition-transform group-hover:translate-y-0.5"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M12 3a1 1 0 0 1 1 1v8.17l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42l2.3 2.3V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z"
+                  />
+                </svg>
+                Descargar Bitácora de Inversión BTC (Excel Automatizado)
+              </a>
+
+              <p className="mt-3 text-center text-[11px] uppercase tracking-widest text-zinc-500">
+                Formato .xlsx · Actualización automática
+              </p>
+            </div>
+
+            {/* RUTA DE CLASES */}
+            <div className="rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-4 shadow-lg shadow-black/20 backdrop-blur">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-white">Ruta de clases</h2>
+                <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-400">
+                  {lessons.length} clases
+                </span>
+              </div>
+              <ul className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+                {lessons.length === 0 && <li className="text-sm text-zinc-500">No hay lecciones disponibles.</li>}
+                {lessons.map((les, idx) => (
+                  <li key={les.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedIndex(idx)}
+                      className={`w-full rounded-2xl border p-3 text-left transition ${
+                        idx === selectedIndex
+                          ? "border-amber-500/30 bg-amber-500/10"
+                          : "border-transparent bg-zinc-950/40 hover:border-zinc-700 hover:bg-zinc-800/70"
+                      }`}
+                    >
+                      <div className="text-sm font-semibold text-white">{les.title}</div>
+                      {les.description && (
+                        <div className="mt-1 text-xs text-zinc-500 line-clamp-2">{les.description}</div>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
