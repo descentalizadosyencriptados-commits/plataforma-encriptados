@@ -175,6 +175,30 @@ export default function CoursePage() {
             )}
 
             <section className="rounded-3xl border border-zinc-800/90 bg-zinc-900/70 p-6 shadow-2xl shadow-black/20 backdrop-blur">
+              {isBtcCourse && (
+                <div className="mb-6 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-400">Recursos de Inversión</p>
+                      <h4 className="mt-2 text-lg font-semibold text-white">Bitácora de Ahorro Inteligente BTC</h4>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300">
+                        Descarga la hoja de cálculo automatizada para registrar aportes, promedios y el seguimiento de tu estrategia de ahorro sostenible.
+                      </p>
+                    </div>
+                    <a
+                      href="/downloads/BTC_FINAL.xlsx"
+                      download
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-amber-400"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
+                        <path fill="currentColor" d="M12 3a1 1 0 0 1 1 1v8.17l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42l2.3 2.3V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z" />
+                      </svg>
+                      Descargar Bitácora de Ahorro Inteligente BTC (Excel Automatizado)
+                    </a>
+                  </div>
+                </div>
+              )}
+
               {current ? (
                 <>
                   <div className="mb-4 h-0 w-full overflow-hidden rounded-2xl bg-black pb-[56.25%]">
@@ -221,30 +245,6 @@ export default function CoursePage() {
                       )}
                     </div>
                   </div>
-
-                  {isBtcCourse && (
-                    <div className="mt-6 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                        <div>
-                          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-400">Recursos de Inversión</p>
-                          <h4 className="mt-2 text-lg font-semibold text-white">Bitácora de Ahorro Inteligente BTC</h4>
-                          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300">
-                            Descarga la hoja de cálculo automatizada para registrar aportes, promedios y el seguimiento de tu estrategia de ahorro sostenible.
-                          </p>
-                        </div>
-                        <a
-                          href="/downloads/BTC_FINAL.xlsx"
-                          download
-                          className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-amber-400"
-                        >
-                          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
-                            <path fill="currentColor" d="M12 3a1 1 0 0 1 1 1v8.17l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42l2.3 2.3V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z" />
-                          </svg>
-                          Descargar Bitácora de Ahorro Inteligente BTC (Excel Automatizado)
-                        </a>
-                      </div>
-                    </div>
-                  )}
                 </>
               ) : (
                 <div className="text-zinc-500">Selecciona una lección para empezar.</div>
