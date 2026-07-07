@@ -138,6 +138,7 @@ export default function CoursePage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[7fr_3fr] lg:items-start">
           {/* ===================== COLUMNA IZQUIERDA (~70%) ===================== */}
           <main className="space-y-6">
+            {/* 1. TARJETAS INFORMATIVAS DE MÓDULOS */}
             {isBtcCourse && (
               <section className="grid gap-4 md:grid-cols-3">
                 {btcModules.map((module) => (
@@ -152,6 +153,46 @@ export default function CoursePage() {
               </section>
             )}
 
+            {/* 2. BANNER DE RECURSO DESTACADO - ANCHO COMPLETO, ANTES DEL VIDEO */}
+            {isBtcCourse && (
+              <div className="flex w-full flex-col items-start justify-between gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-5 py-4 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-3">
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    className="h-5 w-5 shrink-0 text-amber-500"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M12 2a1 1 0 0 1 1 1v11.17l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V3a1 1 0 0 1 1-1Zm-8 18a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1Z"
+                    />
+                  </svg>
+                  <span className="text-sm font-semibold text-amber-100 sm:text-base">
+                    Bitácora de Inversión BTC (Excel Automatizado)
+                  </span>
+                </div>
+
+                <a
+                  href="/downloads/BTC_FINAL.xlsx"
+                  download
+                  className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold text-zinc-950 shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-400 hover:shadow-amber-400/30"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    className="h-4 w-4 transition-transform group-hover:translate-y-0.5"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M12 3a1 1 0 0 1 1 1v8.17l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42l2.3 2.3V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z"
+                    />
+                  </svg>
+                  Descargar
+                </a>
+              </div>
+            )}
+
+            {/* 3. REPRODUCTOR DE VIDEO - INMEDIATAMENTE ABAJO DEL BANNER */}
             <section className="rounded-3xl border border-zinc-800/90 bg-zinc-900/70 p-6 shadow-2xl shadow-black/20 backdrop-blur">
               {current ? (
                 <>
@@ -184,7 +225,7 @@ export default function CoursePage() {
                     </div>
                     <div className="flex flex-wrap gap-3">
                       {current.pdf_url && (
-                        
+                        <a
                           href={current.pdf_url}
                           target="_blank"
                           rel="noreferrer"
@@ -194,7 +235,7 @@ export default function CoursePage() {
                         </a>
                       )}
                       {current.pdf_url && current.pdf_url.includes("calculator") && (
-                        
+                        <a
                           href={current.pdf_url}
                           target="_blank"
                           rel="noreferrer"
@@ -214,52 +255,14 @@ export default function CoursePage() {
 
           {/* ===================== COLUMNA DERECHA (~30%) - FIJA ===================== */}
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-            {/* TARJETA DESTACADA: RECURSOS INTELIGENTES DE INVERSIÓN */}
-            <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-zinc-900/40 p-6 shadow-2xl shadow-black/40 backdrop-blur-md">
-              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
-                Recursos Inteligentes de Inversión
-              </p>
-              <h4 className="mt-3 text-xl font-semibold text-white">
-                Bitácora de Ahorro Inteligente BTC
-              </h4>
-              <p className="mt-3 text-sm leading-6 text-zinc-300">
-                Descarga la hoja de cálculo automatizada para registrar aportes, promedios de compra y el
-                seguimiento en tiempo real de tu estrategia de acumulación.
-              </p>
-
-              
-                href="/downloads/BTC_FINAL.xlsx"
-                download
-                className="group mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500 px-4 py-3 text-sm font-semibold text-zinc-950 shadow-lg shadow-amber-500/20 transition-all hover:border-amber-400 hover:bg-amber-400 hover:shadow-amber-400/30"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                  className="h-5 w-5 transition-transform group-hover:translate-y-0.5"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M12 3a1 1 0 0 1 1 1v8.17l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42l2.3 2.3V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z"
-                  />
-                </svg>
-                Descargar Bitácora de Inversión BTC (Excel Automatizado)
-              </a>
-
-              <p className="mt-3 text-center text-[11px] uppercase tracking-widest text-zinc-500">
-                Formato .xlsx · Actualización automática
-              </p>
-            </div>
-
-            {/* RUTA DE CLASES */}
-            <div className="rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-4 shadow-lg shadow-black/20 backdrop-blur">
+            <div className="rounded-3xl border border-zinc-800/90 bg-zinc-900/40 p-4 shadow-lg shadow-black/20 backdrop-blur-md">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-white">Ruta de clases</h2>
                 <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-400">
                   {lessons.length} clases
                 </span>
               </div>
-              <ul className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+              <ul className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
                 {lessons.length === 0 && <li className="text-sm text-zinc-500">No hay lecciones disponibles.</li>}
                 {lessons.map((les, idx) => (
                   <li key={les.id}>
