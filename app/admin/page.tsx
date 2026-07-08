@@ -11,6 +11,21 @@ const CONTENT_TABLE = "course_contents";
 const COURSE_TIER = "ahorro-bitcoin";
 const COURSE_TIER_LABEL = "Curso Ahorro Inteligente BTC";
 
+const MEMBERSHIP_OPTIONS = [
+  { label: "Curso Ahorro Inteligente BTC", value: "ahorro-bitcoin" },
+  { label: "DeFi Avanzado", value: "defi-avanzado" },
+  { label: "Yield Farming", value: "yield-farming" },
+] as const;
+
+const MEMBERSHIP_NORMALIZER: Record<string, string> = {
+  "curso ahorro inteligente btc": "ahorro-bitcoin",
+  "ahorro-bitcoin": "ahorro-bitcoin",
+  "defi avanzado": "defi-avanzado",
+  "defi-avanzado": "defi-avanzado",
+  "yield farming": "yield-farming",
+  "yield-farming": "yield-farming",
+};
+
 type CourseContent = {
   id: number;
   title: string;
@@ -109,6 +124,11 @@ export default function AdminPage() {
     }
   }, [allowed]);
 
+  const normalizeMembershipTier = (tier: string) => {
+    const normalized = tier?.trim().toLowerCase();
+    return MEMBERSHIP_NORMALIZER[normalized] ?? tier;
+  };
+
   const resetForm = () => {
     setTitle("");
     setDescription("");
@@ -141,7 +161,7 @@ export default function AdminPage() {
             description,
             video_url: videoUrl,
             pdf_url: pdfUrl && pdfUrl.trim() !== "" ? pdfUrl : null,
-            membership_tier: membershipTier,
+            membership_tier: normalizeMembershipTier(membershipTier),
           };
 
           const { error } = await supabase.from(CONTENT_TABLE).update(payload).eq("id", editingContentId);
@@ -170,7 +190,7 @@ export default function AdminPage() {
         description,
         video_url: videoUrl,
         pdf_url: pdfUrl && pdfUrl.trim() !== "" ? pdfUrl : null,
-        membership_tier: membershipTier,
+        membership_tier: normalizeMembershipTier(membershipTier),
       };
 
       const { error } = await supabase.from(CONTENT_TABLE).insert([payload]);
@@ -196,7 +216,7 @@ export default function AdminPage() {
     setDescription(content.description);
     setVideoUrl(content.video_url);
     setPdfUrl(content.pdf_url);
-    setMembershipTier(content.membership_tier);
+    setMembershipTier(normalizeMembershipTier(content.membership_tier));
     setStatus("Modo edición activo. Edita los campos y actualiza.");
   };
 
@@ -356,9 +376,11 @@ export default function AdminPage() {
                     className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                   >
                     <option value="">-- Seleccionar producto --</option>
-                    <option value="ahorro-bitcoin">Curso Ahorro Inteligente BTC</option>
-                    <option value="defi-avanzado">DeFi Avanzado</option>
-                    <option value="yield-farming">Yield Farming</option>
+                    {MEMBERSHIP_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <p className="mt-1 text-xs text-slate-500">Selecciona el producto cuyo identificador (slug) será almacenado en la columna membership_tier.</p>
