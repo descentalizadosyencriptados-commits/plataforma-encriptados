@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
@@ -38,6 +38,7 @@ export default function AdminPage() {
   const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [membershipTier, setMembershipTier] = useState<MembershipTier>(COURSE_TIER);
   const [contents, setContents] = useState<CourseContent[]>([]);
   const [editingContentId, setEditingContentId] = useState<number | null>(null);
@@ -133,8 +134,8 @@ export default function AdminPage() {
       return;
     }
 
-    if (!title || !description || !videoUrl || !pdfUrl) {
-      setStatus("Completa todos los campos antes de guardar.");
+    if (!title || !description || !videoUrl) {
+      setStatus("Completa los campos obligatorios (título, descripción y video)." );
       return;
     }
 
@@ -147,7 +148,7 @@ export default function AdminPage() {
             title,
             description,
             video_url: videoUrl,
-            pdf_url: pdfUrl,
+            pdf_url: pdfUrl && pdfUrl.trim() !== "" ? pdfUrl : null,
             membership_tier: membershipTier,
           })
           .eq("id", editingContentId);
@@ -176,7 +177,7 @@ export default function AdminPage() {
           title,
           description,
           video_url: videoUrl,
-          pdf_url: pdfUrl,
+          pdf_url: pdfUrl && pdfUrl.trim() !== "" ? pdfUrl : null,
           membership_tier: membershipTier,
         },
       ]);
@@ -308,12 +309,47 @@ export default function AdminPage() {
                 </label>
                 <label className="flex flex-col gap-2 text-sm text-slate-300">
                   Recurso / Excel / PDF
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      value={pdfUrl}
+                      onChange={(event) => setPdfUrl(event.target.value)}
+                      className="flex-1 rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                      placeholder="Dejar vacío si no aplica, o pega la URL aquí..."
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="whitespace-nowrap rounded-2xl border border-amber-400/10 bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/15"
+                    >
+                      📁 Adjuntar Archivo Local (.pdf, .xlsx, .html)
+                    </button>
+
+                    {pdfUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => setPdfUrl("")}
+                        className="ml-2 rounded-full bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-300 hover:bg-rose-500/15"
+                        title="Limpiar recurso"
+                      >
+                        ✖
+                      </button>
+                    ) : null}
+                  </div>
+
                   <input
-                    type="url"
-                    value={pdfUrl}
-                    onChange={(event) => setPdfUrl(event.target.value)}
-                    className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                    placeholder="https://drive.google.com/..."
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.xlsx,.xls,.html,.htm"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const suggestedPath = `/downloads/${file.name}`;
+                        setPdfUrl(suggestedPath);
+                      }
+                    }}
+                    className="hidden"
                   />
                 </label>
               </div>
