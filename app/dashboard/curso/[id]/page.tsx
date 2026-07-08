@@ -8,6 +8,30 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+const COURSE_MEMBERSHIP_MAP: Record<string, string> = {
+  btc: "Curso Ahorro Inteligente BTC",
+  defi: "DeFi Avanzado",
+  yield: "Yield Farming",
+};
+
+const COURSE_META: Record<string, { title: string; description: string }> = {
+  btc: {
+    title: "Curso Ahorro Inteligente BTC",
+    description:
+      "Estrategias y herramientas prácticas de acumulación, analítica y custodia profesional de activos digitales.",
+  },
+  defi: {
+    title: "DeFi Avanzado",
+    description:
+      "Deep-dive en smart contracts, lending y estrategias avanzadas para dominar finanzas descentralizadas.",
+  },
+  yield: {
+    title: "Yield Farming",
+    description:
+      "Optimiza tus ingresos con estrategias de liquidez concentrada, pools y gestión de positions DeFi.",
+  },
+};
+
 interface Lesson {
   id: string;
   title: string;
@@ -33,10 +57,19 @@ export default function CoursePage() {
         return;
       }
 
+      const courseKey = typeof id === "string" ? id.toLowerCase() : "";
+      const courseMembership = COURSE_MEMBERSHIP_MAP[courseKey as keyof typeof COURSE_MEMBERSHIP_MAP];
+
+      if (!courseMembership) {
+        setLessons([]);
+        setLoading(false);
+        return;
+      }
+
       const { data: lessonsData } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("course_id", id)
+        .from("course_contents")
+        .select("id, title, description, video_url, pdf_url as download_url, title as download_label, order_index")
+        .eq("membership_tier", courseMembership)
         .order("order_index", { ascending: true });
 
       if (lessonsData && lessonsData.length > 0) {
@@ -57,6 +90,10 @@ export default function CoursePage() {
   }
 
   const currentLesson = lessons[selectedIndex];
+  const courseMeta = COURSE_META[id as keyof typeof COURSE_META] ?? {
+    title: "Curso",
+    description: "Accede a las lecciones de este curso.",
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6 md:p-12">
@@ -71,9 +108,9 @@ export default function CoursePage() {
       {/* Encabezado del Curso */}
       <header className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-gradient-to-r from-zinc-900 via-zinc-950 to-zinc-900 p-8 mb-8 shadow-2xl">
         <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-500">Academia Encriptados</span>
-        <h1 className="text-3xl font-black mt-2 text-zinc-100">Curso Ahorro Inteligente BTC</h1>
+        <h1 className="text-3xl font-black mt-2 text-zinc-100">{courseMeta.title}</h1>
         <p className="mt-2 text-sm text-zinc-400 max-w-2xl">
-          Estrategias y herramientas prácticas de acumulación, analítica y custodia profesional de activos digitales.
+          {courseMeta.description}
         </p>
       </header>
 
