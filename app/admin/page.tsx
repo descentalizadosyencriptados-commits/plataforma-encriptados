@@ -8,15 +8,8 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const CONTENT_TABLE = "course_contents";
-const COURSE_TIER = "Curso Ahorro Inteligente BTC";
-
-const membershipOptions = [
-  "Curso Ahorro Inteligente BTC",
-  "DeFi Avanzado",
-  "Asesoría 1a1",
-] as const;
-
-type MembershipTier = (typeof membershipOptions)[number];
+const COURSE_TIER = "ahorro-bitcoin";
+const COURSE_TIER_LABEL = "Curso Ahorro Inteligente BTC";
 
 type CourseContent = {
   id: number;
@@ -24,8 +17,7 @@ type CourseContent = {
   description: string;
   video_url: string;
   pdf_url: string;
-  membership_tier: MembershipTier;
-  product_id?: string | number | null;
+  membership_tier: string;
 };
 
 export default function AdminPage() {
@@ -40,9 +32,7 @@ export default function AdminPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [membershipTier, setMembershipTier] = useState<MembershipTier>(COURSE_TIER);
-  const [products, setProducts] = useState<Array<{ id: number; title: string; slug?: string }>>([]);
-  const [productId, setProductId] = useState<string | null>(null);
+  const [membershipTier, setMembershipTier] = useState<string>(COURSE_TIER);
   const [contents, setContents] = useState<CourseContent[]>([]);
   const [editingContentId, setEditingContentId] = useState<number | null>(null);
   const [contentLoading, setContentLoading] = useState(false);
@@ -94,7 +84,7 @@ export default function AdminPage() {
     try {
       const { data, error } = await supabase
         .from(CONTENT_TABLE)
-        .select("id, title, description, video_url, pdf_url, membership_tier, product_id")
+        .select("id, title, description, video_url, pdf_url, membership_tier")
         .eq("membership_tier", COURSE_TIER)
         .order("id", { ascending: true });
 
@@ -113,22 +103,9 @@ export default function AdminPage() {
     }
   };
 
-  const loadProducts = async () => {
-    try {
-      const { data, error } = await supabase.from("products").select("id, title, slug").order("id", { ascending: true });
-      if (!error && data) {
-        setProducts(data as any);
-        // Do not auto-set productId because select is hardcoded to slugs
-      }
-    } catch (e) {
-      console.error("Error loading products:", e);
-    }
-  };
-
   useEffect(() => {
     if (allowed) {
       loadContents();
-      loadProducts();
     }
   }, [allowed]);
 
@@ -137,58 +114,10 @@ export default function AdminPage() {
     setDescription("");
     setVideoUrl("");
     setPdfUrl("");
-    setMembershipTier(membershipOptions[0]);
-    setProductId(null);
+    setMembershipTier(COURSE_TIER);
     setEditingContentId(null);
   };
 
-  const resolveMembershipForeignKey = async (tierName: string) => {
-    if (!tierName) return null;
-    const candidates = [
-      { table: "products", col: "title", fk: "product_id" },
-      { table: "products", col: "name", fk: "product_id" },
-      { table: "memberships", col: "name", fk: "membership_id" },
-      { table: "membership_tiers", col: "name", fk: "membership_tier_id" },
-      { table: "plans", col: "name", fk: "plan_id" },
-    ];
-
-    for (const c of candidates) {
-      try {
-        const { data, error } = await supabase
-          .from(c.table)
-          .select("id")
-          .eq(c.col, tierName)
-          .limit(1)
-          .maybeSingle();
-
-        if (!error && data?.id) {
-          return { id: data.id as number, fkColumn: c.fk };
-        }
-      } catch (e) {
-        // ignore and continue
-      }
-    }
-
-    // Try case-insensitive search as fallback
-    for (const c of candidates) {
-      try {
-        const { data, error } = await supabase
-          .from(c.table)
-          .select("id")
-          .ilike(c.col, tierName)
-          .limit(1)
-          .maybeSingle();
-
-        if (!error && data?.id) {
-          return { id: data.id as number, fkColumn: c.fk };
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    return null;
-  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -212,14 +141,8 @@ export default function AdminPage() {
             description,
             video_url: videoUrl,
             pdf_url: pdfUrl && pdfUrl.trim() !== "" ? pdfUrl : null,
+            membership_tier: membershipTier,
           };
-
-          // If a product is selected, include its ID in the payload (column product_id)
-          if (productId) {
-            payload.product_id = productId;
-          }
-          // Always set membership_tier from the form state (defaults to COURSE_TIER)
-          payload.membership_tier = membershipTier;
 
           const { error } = await supabase.from(CONTENT_TABLE).update(payload).eq("id", editingContentId);
 
@@ -247,13 +170,8 @@ export default function AdminPage() {
         description,
         video_url: videoUrl,
         pdf_url: pdfUrl && pdfUrl.trim() !== "" ? pdfUrl : null,
+        membership_tier: membershipTier,
       };
-
-      if (productId) {
-        payload.product_id = productId;
-      }
-      // Always set membership_tier from the form state (defaults to COURSE_TIER)
-      payload.membership_tier = membershipTier;
 
       const { error } = await supabase.from(CONTENT_TABLE).insert([payload]);
 
@@ -279,8 +197,6 @@ export default function AdminPage() {
     setVideoUrl(content.video_url);
     setPdfUrl(content.pdf_url);
     setMembershipTier(content.membership_tier);
-    const pid = (content as any).product_id ?? null;
-    setProductId(pid !== null && pid !== undefined ? String(pid) : null);
     setStatus("Modo edición activo. Edita los campos y actualiza.");
   };
 
@@ -435,8 +351,8 @@ export default function AdminPage() {
                 <p className="text-xs uppercase tracking-[0.3em] text-amber-300/80">Vincular a este Producto</p>
                 <div className="mt-2">
                   <select
-                    value={productId ?? ""}
-                    onChange={(e) => setProductId(e.target.value ? e.target.value : null)}
+                    value={membershipTier}
+                    onChange={(e) => setMembershipTier(e.target.value)}
                     className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                   >
                     <option value="">-- Seleccionar producto --</option>
@@ -445,7 +361,7 @@ export default function AdminPage() {
                     <option value="yield-farming">Yield Farming</option>
                   </select>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">Selecciona el producto cuyo identificador (slug) será almacenado en la tabla.</p>
+                <p className="mt-1 text-xs text-slate-500">Selecciona el producto cuyo identificador (slug) será almacenado en la columna membership_tier.</p>
               </div>
 
               <button
