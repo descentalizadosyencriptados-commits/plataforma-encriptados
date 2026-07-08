@@ -68,12 +68,12 @@ export default function CoursePage() {
 
       const { data: lessonsData } = await supabase
         .from("course_contents")
-        .select("id, title, description, video_url, pdf_url as download_url, title as download_label, order_index")
+        .select("id, title, description, video_url, download_url:pdf_url, download_label:title, order_index")
         .eq("membership_tier", courseMembership)
         .order("order_index", { ascending: true });
 
       if (lessonsData && lessonsData.length > 0) {
-        setLessons(lessonsData);
+        setLessons(lessonsData as Lesson[]);
       }
       setLoading(false);
     }
