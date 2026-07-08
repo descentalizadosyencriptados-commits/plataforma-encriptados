@@ -25,7 +25,7 @@ type CourseContent = {
   video_url: string;
   pdf_url: string;
   membership_tier: MembershipTier;
-  product_id?: number | null;
+  product_id?: string | number | null;
 };
 
 export default function AdminPage() {
@@ -42,7 +42,7 @@ export default function AdminPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [membershipTier, setMembershipTier] = useState<MembershipTier>(COURSE_TIER);
   const [products, setProducts] = useState<Array<{ id: number; title: string; slug?: string }>>([]);
-  const [productId, setProductId] = useState<number | null>(null);
+  const [productId, setProductId] = useState<string | null>(null);
   const [contents, setContents] = useState<CourseContent[]>([]);
   const [editingContentId, setEditingContentId] = useState<number | null>(null);
   const [contentLoading, setContentLoading] = useState(false);
@@ -118,8 +118,7 @@ export default function AdminPage() {
       const { data, error } = await supabase.from("products").select("id, title, slug").order("id", { ascending: true });
       if (!error && data) {
         setProducts(data as any);
-        const found = (data as any[]).find((p) => p.title === COURSE_TIER || p.slug === COURSE_TIER);
-        setProductId(found ? found.id : (data as any[])[0]?.id ?? null);
+        // Do not auto-set productId because select is hardcoded to slugs
       }
     } catch (e) {
       console.error("Error loading products:", e);
@@ -139,7 +138,7 @@ export default function AdminPage() {
     setVideoUrl("");
     setPdfUrl("");
     setMembershipTier(membershipOptions[0]);
-    setProductId(products?.[0]?.id ?? null);
+    setProductId(null);
     setEditingContentId(null);
   };
 
@@ -280,7 +279,8 @@ export default function AdminPage() {
     setVideoUrl(content.video_url);
     setPdfUrl(content.pdf_url);
     setMembershipTier(content.membership_tier);
-    setProductId((content as any).product_id ?? null);
+    const pid = (content as any).product_id ?? null;
+    setProductId(pid !== null && pid !== undefined ? String(pid) : null);
     setStatus("Modo edición activo. Edita los campos y actualiza.");
   };
 
@@ -436,18 +436,16 @@ export default function AdminPage() {
                 <div className="mt-2">
                   <select
                     value={productId ?? ""}
-                    onChange={(e) => setProductId(e.target.value ? Number(e.target.value) : null)}
+                    onChange={(e) => setProductId(e.target.value ? e.target.value : null)}
                     className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
                   >
                     <option value="">-- Seleccionar producto --</option>
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.title}
-                      </option>
-                    ))}
+                    <option value="ahorro-bitcoin">Curso Ahorro Inteligente BTC</option>
+                    <option value="defi-avanzado">DeFi Avanzado</option>
+                    <option value="yield-farming">Yield Farming</option>
                   </select>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">Selecciona el producto cuyo ID será almacenado en la tabla.</p>
+                <p className="mt-1 text-xs text-slate-500">Selecciona el producto cuyo identificador (slug) será almacenado en la tabla.</p>
               </div>
 
               <button
