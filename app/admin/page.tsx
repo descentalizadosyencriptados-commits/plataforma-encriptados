@@ -8,22 +8,18 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const CONTENT_TABLE = "course_contents";
-const COURSE_TIER = "ahorro-bitcoin";
-const COURSE_TIER_LABEL = "Curso Ahorro Inteligente BTC";
+const COURSE_TIER = "Curso Ahorro Inteligente BTC";
 
 const MEMBERSHIP_OPTIONS = [
-  { label: "Curso Ahorro Inteligente BTC", value: "ahorro-bitcoin" },
-  { label: "DeFi Avanzado", value: "defi-avanzado" },
-  { label: "Yield Farming", value: "yield-farming" },
+  { label: "Curso Ahorro Inteligente BTC", value: "Curso Ahorro Inteligente BTC" },
+  { label: "DeFi Avanzado", value: "DeFi Avanzado" },
+  { label: "Yield Farming", value: "Yield Farming" },
 ] as const;
 
 const MEMBERSHIP_NORMALIZER: Record<string, string> = {
-  "curso ahorro inteligente btc": "ahorro-bitcoin",
-  "ahorro-bitcoin": "ahorro-bitcoin",
-  "defi avanzado": "defi-avanzado",
-  "defi-avanzado": "defi-avanzado",
-  "yield farming": "yield-farming",
-  "yield-farming": "yield-farming",
+  "curso ahorro inteligente btc": "Curso Ahorro Inteligente BTC",
+  "defi avanzado": "DeFi Avanzado",
+  "yield farming": "Yield Farming",
 };
 
 type CourseContent = {
@@ -383,7 +379,7 @@ export default function AdminPage() {
                     ))}
                   </select>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">Selecciona el producto cuyo identificador (slug) será almacenado en la columna membership_tier.</p>
+                <p className="mt-1 text-xs text-slate-500">Selecciona el producto cuyo nombre exacto será almacenado en la columna membership_tier.</p>
               </div>
 
               <button
