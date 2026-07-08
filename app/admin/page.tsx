@@ -25,6 +25,7 @@ type CourseContent = {
   video_url: string;
   pdf_url: string;
   membership_tier: MembershipTier;
+  product_id?: number | null;
 };
 
 export default function AdminPage() {
@@ -40,6 +41,8 @@ export default function AdminPage() {
   const [pdfUrl, setPdfUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [membershipTier, setMembershipTier] = useState<MembershipTier>(COURSE_TIER);
+  const [products, setProducts] = useState<Array<{ id: number; title: string; slug?: string }>>([]);
+  const [productId, setProductId] = useState<number | null>(null);
   const [contents, setContents] = useState<CourseContent[]>([]);
   const [editingContentId, setEditingContentId] = useState<number | null>(null);
   const [contentLoading, setContentLoading] = useState(false);
@@ -91,7 +94,7 @@ export default function AdminPage() {
     try {
       const { data, error } = await supabase
         .from(CONTENT_TABLE)
-        .select("id, title, description, video_url, pdf_url, membership_tier")
+        .select("id, title, description, video_url, pdf_url, membership_tier, product_id")
         .eq("membership_tier", COURSE_TIER)
         .order("id", { ascending: true });
 
@@ -110,9 +113,23 @@ export default function AdminPage() {
     }
   };
 
+  const loadProducts = async () => {
+    try {
+      const { data, error } = await supabase.from("products").select("id, title, slug").order("id", { ascending: true });
+      if (!error && data) {
+        setProducts(data as any);
+        const found = (data as any[]).find((p) => p.title === COURSE_TIER || p.slug === COURSE_TIER);
+        setProductId(found ? found.id : (data as any[])[0]?.id ?? null);
+      }
+    } catch (e) {
+      console.error("Error loading products:", e);
+    }
+  };
+
   useEffect(() => {
     if (allowed) {
       loadContents();
+      loadProducts();
     }
   }, [allowed]);
 
@@ -122,7 +139,56 @@ export default function AdminPage() {
     setVideoUrl("");
     setPdfUrl("");
     setMembershipTier(membershipOptions[0]);
+    setProductId(products?.[0]?.id ?? null);
     setEditingContentId(null);
+  };
+
+  const resolveMembershipForeignKey = async (tierName: string) => {
+    if (!tierName) return null;
+    const candidates = [
+      { table: "products", col: "title", fk: "product_id" },
+      { table: "products", col: "name", fk: "product_id" },
+      { table: "memberships", col: "name", fk: "membership_id" },
+      { table: "membership_tiers", col: "name", fk: "membership_tier_id" },
+      { table: "plans", col: "name", fk: "plan_id" },
+    ];
+
+    for (const c of candidates) {
+      try {
+        const { data, error } = await supabase
+          .from(c.table)
+          .select("id")
+          .eq(c.col, tierName)
+          .limit(1)
+          .maybeSingle();
+
+        if (!error && data?.id) {
+          return { id: data.id as number, fkColumn: c.fk };
+        }
+      } catch (e) {
+        // ignore and continue
+      }
+    }
+
+    // Try case-insensitive search as fallback
+    for (const c of candidates) {
+      try {
+        const { data, error } = await supabase
+          .from(c.table)
+          .select("id")
+          .ilike(c.col, tierName)
+          .limit(1)
+          .maybeSingle();
+
+        if (!error && data?.id) {
+          return { id: data.id as number, fkColumn: c.fk };
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    return null;
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -142,16 +208,21 @@ export default function AdminPage() {
     if (editingContentId !== null) {
       setStatus("Actualizando contenido en Supabase...");
       try {
-        const { error } = await supabase
-          .from(CONTENT_TABLE)
-          .update({
+          const payload: any = {
             title,
             description,
             video_url: videoUrl,
             pdf_url: pdfUrl && pdfUrl.trim() !== "" ? pdfUrl : null,
-            membership_tier: membershipTier,
-          })
-          .eq("id", editingContentId);
+          };
+
+          // If a product is selected, include its ID in the payload (column product_id)
+          if (productId) {
+            payload.product_id = productId;
+          }
+          // Always set membership_tier from the form state (defaults to COURSE_TIER)
+          payload.membership_tier = membershipTier;
+
+          const { error } = await supabase.from(CONTENT_TABLE).update(payload).eq("id", editingContentId);
 
         if (error) {
           setStatus("Error al actualizar el contenido. Revisa la consola.");
@@ -172,15 +243,20 @@ export default function AdminPage() {
 
     setStatus("Guardando contenido en Supabase...");
     try {
-      const { error } = await supabase.from(CONTENT_TABLE).insert([
-        {
-          title,
-          description,
-          video_url: videoUrl,
-          pdf_url: pdfUrl && pdfUrl.trim() !== "" ? pdfUrl : null,
-          membership_tier: membershipTier,
-        },
-      ]);
+      const payload: any = {
+        title,
+        description,
+        video_url: videoUrl,
+        pdf_url: pdfUrl && pdfUrl.trim() !== "" ? pdfUrl : null,
+      };
+
+      if (productId) {
+        payload.product_id = productId;
+      }
+      // Always set membership_tier from the form state (defaults to COURSE_TIER)
+      payload.membership_tier = membershipTier;
+
+      const { error } = await supabase.from(CONTENT_TABLE).insert([payload]);
 
       if (error) {
         setStatus("Error al guardar el contenido. Revisa la consola.");
@@ -204,6 +280,7 @@ export default function AdminPage() {
     setVideoUrl(content.video_url);
     setPdfUrl(content.pdf_url);
     setMembershipTier(content.membership_tier);
+    setProductId((content as any).product_id ?? null);
     setStatus("Modo edición activo. Edita los campos y actualiza.");
   };
 
@@ -355,9 +432,22 @@ export default function AdminPage() {
               </div>
 
               <div className="rounded-2xl border border-slate-700 bg-slate-950/80 p-4 text-sm text-slate-300">
-                <p className="text-xs uppercase tracking-[0.3em] text-amber-300/80">Producto asociado</p>
-                <p className="mt-2 font-medium text-slate-100">{COURSE_TIER}</p>
-                <p className="mt-1 text-xs text-slate-500">Todos los cambios se aplican solo a este curso.</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-amber-300/80">Vincular a este Producto</p>
+                <div className="mt-2">
+                  <select
+                    value={productId ?? ""}
+                    onChange={(e) => setProductId(e.target.value ? Number(e.target.value) : null)}
+                    className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+                  >
+                    <option value="">-- Seleccionar producto --</option>
+                    {products.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="mt-1 text-xs text-slate-500">Selecciona el producto cuyo ID será almacenado en la tabla.</p>
               </div>
 
               <button
